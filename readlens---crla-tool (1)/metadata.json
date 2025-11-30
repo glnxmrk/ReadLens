@@ -1,0 +1,5 @@
+{
+  "name": "ReadLens - CRLA Tool",
+  "description": "Comprehensive Reading Literacy Assessment (CRLA) tool for Grades 1-3, featuring learner enrollment, various assessment tasks (Letter Naming, Sentence Reading, Word/Rhyme ID, Story Reading), and automated reporting.",
+  "requestFramePermissions": []
+}
