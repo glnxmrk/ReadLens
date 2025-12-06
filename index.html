@@ -1350,11 +1350,11 @@
             /* Now handled by vertical-chart style, but keeping for compatibility if needed */
         }
 
-        /* --- REDESIGNED VERTICAL CHART STYLES --- */
+        /* --- REDESIGNED VERTICAL CHART STYLES (MODIFIED) --- */
         .vertical-chart {
             display: flex;
             align-items: flex-end;
-            height: 250px; /* Taller for vertical bars */
+            height: 400px; /* INCREASED from 250px */
             padding: 30px 10px 50px 10px;
             width: 100%;
             gap: 10px;
@@ -1381,9 +1381,9 @@
         }
 
         .v-bar {
-            width: 35%;
-            max-width: 40px;
-            min-width: 10px;
+            width: 45%; /* INCREASED from 35% */
+            max-width: 80px; /* INCREASED from 40px */
+            min-width: 15px;
             border-radius: 4px 4px 0 0;
             position: relative;
             transition: height 1s cubic-bezier(0.19, 1, 0.22, 1);
@@ -1392,10 +1392,10 @@
 
         .v-bar-value {
             position: absolute;
-            top: -20px;
+            top: -25px; /* Adjusted spacing */
             left: 50%;
             transform: translateX(-50%);
-            font-size: 0.75rem;
+            font-size: 0.9rem; /* INCREASED from 0.75rem */
             color: rgba(255, 255, 255, 0.9);
             font-weight: 600;
             white-space: nowrap;
@@ -1444,16 +1444,6 @@
             margin-bottom: 20px;
         }
     </style>
-<script type="importmap">
-{
-  "imports": {
-    "react": "https://aistudiocdn.com/react@^19.2.0",
-    "react-dom/": "https://aistudiocdn.com/react-dom@^19.2.0/",
-    "react/": "https://aistudiocdn.com/react@^19.2.0/",
-    "lucide-react": "https://aistudiocdn.com/lucide-react@^0.555.0"
-  }
-}
-</script>
 <link rel="stylesheet" href="/index.css">
 </head>
 <body>
