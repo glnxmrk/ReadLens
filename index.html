@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ReadLens - Reading and Literacy Assessment Tool</title>
+    <title>ReadLens - Focused Literacy. Clear Results</title>
 
     <!-- PWA Manifest & Icons -->
     <link rel="manifest" href="manifest.json">
@@ -1638,7 +1638,7 @@
                     </div>
                 </div>
                 <div class="auth-app-name">ReadLens</div>
-                <div class="auth-tagline">Reading Literacy Assessment Tool</div>
+                <div class="auth-tagline">Focused Literacy. Clear Results</div>
             </div>
 
             <div class="auth-card-body">
@@ -1699,7 +1699,7 @@
                     </div>
                     <div class="logo-text">
                         <h1 class="logo-name">ReadLens</h1>
-                        <p class="logo-tagline">Reading Literacy Assessment Tool(CRLA)</p>
+                        <p class="logo-tagline">Focused Literacy. Clear Results</p>
                     </div>
                 </div>
                 <div class="header-school-info" id="headerSchoolInfo" title="Click to edit school details">
@@ -2426,7 +2426,7 @@
             </div>
 
             <footer>
-                <p>ReadLens - Reading Literacy Assessment Tool | Developed by GLENN MARK S. PRESORES and
+                <p>ReadLens - Focused Literacy. Clear Results | Developed by GLENN MARK S. PRESORES and
                     ROSAVELIA O. JIMENEZ </p>
             </footer>
         </div>
@@ -2451,6 +2451,14 @@
                     <div class="form-group">
                         <label class="form-label">Teacher's Name</label>
                         <input type="text" id="modalTeacherName" class="form-input" placeholder="e.g. Mrs. Santos">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Assessment Feedback Voice</label>
+                        <select id="voiceSelector" class="form-input">
+                            <option value="">Default System Voice</option>
+                        </select>
+                        <p style="font-size: 0.8rem; color: #888; margin-top: 5px;">Choose a voice for assessment
+                            feedback.</p>
                     </div>
                 </div>
                 <div class="modal-footer">
@@ -2802,6 +2810,45 @@
             const correctSound = new Audio('https://assets.mixkit.co/sfx/preview/mixkit-correct-answer-tone-2870.mp3');
             const incorrectSound = new Audio('https://assets.mixkit.co/sfx/preview/mixkit-wrong-answer-fail-notification-946.mp3');
 
+            const affirmativePhrases = ["Good Job!", "Very Good!", "Way to go!", "Excellent!", "Awesome!", "Super job!", "You're a star!", "Amazing work!", "Fantastic!", "Wow! You got it!", "Great reading!", "High five!", "You're doing great!", "Brilliant!", "Look at you go!", "Smart cookie!", "Terrific!"];
+            const negativePhrases = ["Oops!", "Nice try!", "Keep going!", "Try again!", "You can do it!", "Almost there!", "Close! Give it another shot!", "Let's try that one again.", "Don't give up!", "You'll get it next time!", "Think about it once more.", "Nice effort!", "Keep practicing!", "It's okay, try another one.", "Almost! Try once more."];
+
+            function playFeedback(isCorrect) {
+                if (isCorrect) {
+                    correctSound.play().catch(e => { });
+                    const phrase = affirmativePhrases[Math.floor(Math.random() * affirmativePhrases.length)];
+                    speakText(phrase, 'en-US');
+                } else {
+                    incorrectSound.play().catch(e => { });
+                    const phrase = negativePhrases[Math.floor(Math.random() * negativePhrases.length)];
+                    speakText(phrase, 'en-US');
+                }
+            }
+
+            let availableVoices = [];
+            function populateVoices() {
+                if (!('speechSynthesis' in window)) return;
+                availableVoices = window.speechSynthesis.getVoices();
+                const selector = document.getElementById('voiceSelector');
+                if (!selector) return;
+
+                const currentVoiceURI = localStorage.getItem('readLens_voiceURI');
+                selector.innerHTML = '<option value="">Default System Voice</option>';
+
+                availableVoices.forEach(voice => {
+                    const opt = document.createElement('option');
+                    opt.value = voice.voiceURI;
+                    opt.textContent = `${voice.name} (${voice.lang})`;
+                    if (voice.voiceURI === currentVoiceURI) opt.selected = true;
+                    selector.appendChild(opt);
+                });
+            }
+
+            if ('speechSynthesis' in window) {
+                window.speechSynthesis.onvoiceschanged = populateVoices;
+                populateVoices();
+            }
+
             let learners = [];
             let currentLearnerId = null;
             let activeAssessmentLang = "";
@@ -2920,9 +2967,15 @@
                     const s = document.getElementById('modalSchoolName').value.trim();
                     const g = document.getElementById('modalGradeSection').value.trim();
                     const t = document.getElementById('modalTeacherName').value.trim();
+                    const v = document.getElementById('voiceSelector').value;
                     if (s && g && t) {
-                        localStorage.setItem('crlaSchoolName', s); localStorage.setItem('crlaGradeSection', g); localStorage.setItem('crlaTeacherName', t);
-                        updateHeaderDisplay(); document.getElementById('schoolDetailsModal').classList.remove('active'); alert("School details saved!");
+                        localStorage.setItem('crlaSchoolName', s);
+                        localStorage.setItem('crlaGradeSection', g);
+                        localStorage.setItem('crlaTeacherName', t);
+                        localStorage.setItem('readLens_voiceURI', v);
+                        updateHeaderDisplay();
+                        document.getElementById('schoolDetailsModal').classList.remove('active');
+                        alert("Details saved!");
                     } else alert("Please fill in all fields.");
                 });
 
@@ -3396,7 +3449,7 @@
                     totalLetterScore++;
                 } else {
                     wList.push(wordIdx);
-                    incorrectSound.play().catch(e => { });
+                    // Removing playFeedback(false) from Sentence Mode per user request
                     // Adding miscue means -1 to correct words
                     totalLetterScore--;
                 }
@@ -3411,11 +3464,11 @@
                 const oldScore = letterScores[idx];
                 if (isCorrect) {
                     if (oldScore !== 1) totalLetterScore++;
-                    correctSound.play().catch(e => { });
+                    playFeedback(true);
                     createConfetti(cardElement);
                 } else {
                     if (oldScore === 1) totalLetterScore--;
-                    incorrectSound.play().catch(e => { });
+                    playFeedback(false);
                     showSadFace();
                 }
                 if (totalLetterScore < 0) totalLetterScore = 0;
@@ -3501,7 +3554,7 @@
 
             function toggleSentenceMiscue(idx) {
                 if (sentenceMiscues.includes(idx)) sentenceMiscues = sentenceMiscues.filter(i => i !== idx);
-                else { sentenceMiscues.push(idx); incorrectSound.play().catch(e => { }); }
+                else { sentenceMiscues.push(idx); /* playFeedback(false) removed per user request */ }
                 renderSentenceDisplay();
             }
 
@@ -3600,7 +3653,7 @@
                         card.querySelector('.correct-btn').addEventListener('click', () => {
                             if (item.isCorrect !== true) {
                                 item.isCorrect = true;
-                                correctSound.play().catch(e => { });
+                                playFeedback(true);
                                 createConfetti(card);
                                 updateVisuals();
                             }
@@ -3609,7 +3662,7 @@
                         card.querySelector('.incorrect-btn').addEventListener('click', () => {
                             if (item.isCorrect !== false) {
                                 item.isCorrect = false;
-                                incorrectSound.play().catch(e => { });
+                                playFeedback(false);
                                 showSadFace();
                                 updateVisuals();
                             }
@@ -3643,8 +3696,8 @@
                                 localStorage.setItem(USER_EDITS_KEY, JSON.stringify(userEdits));
                             }
                         });
-                        div.querySelector('.correct-btn').addEventListener('click', () => { item.isCorrect = true; correctSound.play().catch(e => { }); renderRhymeList(type); });
-                        div.querySelector('.incorrect-btn').addEventListener('click', () => { item.isCorrect = false; incorrectSound.play().catch(e => { }); renderRhymeList(type); });
+                        div.querySelector('.correct-btn').addEventListener('click', () => { item.isCorrect = true; playFeedback(true); renderRhymeList(type); });
+                        div.querySelector('.incorrect-btn').addEventListener('click', () => { item.isCorrect = false; playFeedback(false); renderRhymeList(type); });
                         container.appendChild(div);
                     });
                     document.getElementById('rhymeScoreDisplay').textContent = score;
@@ -3830,7 +3883,13 @@
                     b.classList.remove('correct-btn', 'incorrect-btn');
                     b.style.backgroundColor = ''; b.style.color = '';
                 });
-                if (correct) btn.classList.add('correct-btn'); else btn.classList.add('incorrect-btn');
+                if (correct) {
+                    btn.classList.add('correct-btn');
+                    playFeedback(true);
+                } else {
+                    btn.classList.add('incorrect-btn');
+                    playFeedback(false);
+                }
                 updateCompScore();
             }
 
@@ -4744,10 +4803,18 @@
                 if (content) content.classList.add('active');
             }
 
-            function speakText(text) {
+            function speakText(text, lang = 'fil-PH') {
                 if ('speechSynthesis' in window) {
                     const utterance = new SpeechSynthesisUtterance(text);
-                    utterance.lang = 'fil-PH';
+
+                    const voiceURI = localStorage.getItem('readLens_voiceURI');
+                    if (voiceURI) {
+                        const voice = availableVoices.find(v => v.voiceURI === voiceURI);
+                        if (voice) utterance.voice = voice;
+                    } else {
+                        utterance.lang = lang;
+                    }
+
                     window.speechSynthesis.speak(utterance);
                 }
             }
