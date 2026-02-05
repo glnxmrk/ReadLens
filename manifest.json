@@ -1,5 +1,5 @@
 {
-  "name": "ReadLens - CRLA Assessment Tool",
+  "name": "ReadLens - Focused Literacy. Clear Results",
   "short_name": "ReadLens",
   "start_url": "./index.html",
   "display": "standalone",
@@ -18,3 +18,4 @@
     }
   ]
 }
+
