@@ -4767,13 +4767,16 @@
                     doc.text(`Teacher: ${teacher}`, 14, 50);
 
                     const stats = {
-                        male: { enrolled: 0, assessed: 0, p1: {}, p2: { wpm: 0, acc: 0, comp: 0, count: 0 }, profile: {} },
-                        female: { enrolled: 0, assessed: 0, p1: {}, p2: { wpm: 0, acc: 0, comp: 0, count: 0 }, profile: {} }
+                        male: { enrolled: 0, assessed: 0, p1: {}, p2: { wpm: 0, acc: 0, comp: 0, count: 0 }, profile: {}, profileNames: {} },
+                        female: { enrolled: 0, assessed: 0, p1: {}, p2: { wpm: 0, acc: 0, comp: 0, count: 0 }, profile: {}, profileNames: {} }
                     };
                     const initCounts = (obj) => {
                         obj.p1["Full Refresher"] = 0; obj.p1["Moderate Refresher"] = 0; obj.p1["Light Refresher"] = 0; obj.p1["Grade Ready"] = 0;
                         obj.profile["Low Emerging Reader"] = 0; obj.profile["High Emerging Reader"] = 0;
                         obj.profile["Developing Reader"] = 0; obj.profile["Transitioning Reader"] = 0; obj.profile["Reading At Grade Level"] = 0;
+
+                        obj.profileNames["Low Emerging Reader"] = []; obj.profileNames["High Emerging Reader"] = [];
+                        obj.profileNames["Developing Reader"] = []; obj.profileNames["Transitioning Reader"] = []; obj.profileNames["Reading At Grade Level"] = [];
                     };
                     initCounts(stats.male); initCounts(stats.female);
 
@@ -4794,11 +4797,20 @@
                                 target.p2.count++; target.p2.wpm += (last.part2.wpm || 0); target.p2.acc += (last.part2.accuracy || 0); target.p2.comp += ((last.part2.comp || 0) / 5) * 100;
                             }
                             const fProf = last.finalProfile;
-                            if (fProf && target.profile[fProf] !== undefined) target.profile[fProf]++;
+                            if (fProf && target.profile[fProf] !== undefined) {
+                                target.profile[fProf]++;
+                                target.profileNames[fProf].push(l.name);
+                            }
                         }
                     });
 
+                    // Sort names alphabetically
+                    Object.keys(stats.male.profileNames).forEach(k => stats.male.profileNames[k].sort((a, b) => a.localeCompare(b)));
+                    Object.keys(stats.female.profileNames).forEach(k => stats.female.profileNames[k].sort((a, b) => a.localeCompare(b)));
+
                     const getAvg = (sum, count) => count > 0 ? Math.round(sum / count) : 0;
+                    const formatNames = (names) => names.length > 0 ? names.map((n, i) => `${i + 1}. ${n}`).join("\n") : "None";
+
                     const rows = [
                         [{ content: 'Learner Count', colSpan: 4, styles: { fillColor: [240, 240, 240], fontStyle: 'bold' } }],
                         ['Number of Learners Enrolled', stats.male.enrolled, stats.female.enrolled, stats.male.enrolled + stats.female.enrolled],
@@ -4816,11 +4828,21 @@
                         ['Average Word Per Minute', getAvg(stats.male.p2.wpm, stats.male.p2.count), getAvg(stats.female.p2.wpm, stats.female.p2.count), getAvg(stats.male.p2.wpm + stats.female.p2.wpm, stats.male.p2.count + stats.female.p2.count)],
 
                         [{ content: 'Reading Profile Categories', colSpan: 4, styles: { fillColor: [240, 240, 240], fontStyle: 'bold' } }],
+
                         ['Low Emerging Reader', stats.male.profile["Low Emerging Reader"], stats.female.profile["Low Emerging Reader"], stats.male.profile["Low Emerging Reader"] + stats.female.profile["Low Emerging Reader"]],
+                        [{ content: `M:\n${formatNames(stats.male.profileNames["Low Emerging Reader"])}\n\nF:\n${formatNames(stats.female.profileNames["Low Emerging Reader"])}`, colSpan: 4, styles: { fontSize: 8, textColor: [100, 100, 100], fontStyle: 'italic' } }],
+
                         ['High Emerging Reader', stats.male.profile["High Emerging Reader"], stats.female.profile["High Emerging Reader"], stats.male.profile["High Emerging Reader"] + stats.female.profile["High Emerging Reader"]],
+                        [{ content: `M:\n${formatNames(stats.male.profileNames["High Emerging Reader"])}\n\nF:\n${formatNames(stats.female.profileNames["High Emerging Reader"])}`, colSpan: 4, styles: { fontSize: 8, textColor: [100, 100, 100], fontStyle: 'italic' } }],
+
                         ['Developing Reader', stats.male.profile["Developing Reader"], stats.female.profile["Developing Reader"], stats.male.profile["Developing Reader"] + stats.female.profile["Developing Reader"]],
+                        [{ content: `M:\n${formatNames(stats.male.profileNames["Developing Reader"])}\n\nF:\n${formatNames(stats.female.profileNames["Developing Reader"])}`, colSpan: 4, styles: { fontSize: 8, textColor: [100, 100, 100], fontStyle: 'italic' } }],
+
                         ['Transitioning Reader', stats.male.profile["Transitioning Reader"], stats.female.profile["Transitioning Reader"], stats.male.profile["Transitioning Reader"] + stats.female.profile["Transitioning Reader"]],
-                        ['Reading At Grade Level', stats.male.profile["Reading At Grade Level"], stats.female.profile["Reading At Grade Level"], stats.male.profile["Reading At Grade Level"] + stats.female.profile["Reading At Grade Level"]]
+                        [{ content: `M:\n${formatNames(stats.male.profileNames["Transitioning Reader"])}\n\nF:\n${formatNames(stats.female.profileNames["Transitioning Reader"])}`, colSpan: 4, styles: { fontSize: 8, textColor: [100, 100, 100], fontStyle: 'italic' } }],
+
+                        ['Reading At Grade Level', stats.male.profile["Reading At Grade Level"], stats.female.profile["Reading At Grade Level"], stats.male.profile["Reading At Grade Level"] + stats.female.profile["Reading At Grade Level"]],
+                        [{ content: `M:\n${formatNames(stats.male.profileNames["Reading At Grade Level"])}\n\nF:\n${formatNames(stats.female.profileNames["Reading At Grade Level"])}`, colSpan: 4, styles: { fontSize: 8, textColor: [100, 100, 100], fontStyle: 'italic' } }]
                     ];
 
                     doc.autoTable({
