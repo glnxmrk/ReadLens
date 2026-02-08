@@ -1738,6 +1738,9 @@
                             <li class="task-item" data-task="6">
                                 <span class="task-number">6</span> Data & Reports
                             </li>
+                            <li class="task-item" data-task="interventions">
+                                <span class="task-number">7</span> Interventions
+                            </li>
                         </ul>
                     </div>
 
@@ -2422,50 +2425,87 @@
                             </div>
                         </div>
                     </div>
-                </div>
-            </div>
 
-            <footer>
-                <p>ReadLens - Focused Literacy. Clear Results | Developed by GLENN MARK S. PRESORES and
-                    ROSAVELIA O. JIMENEZ </p>
-            </footer>
-        </div>
-
-        <!-- School Details Modal -->
-        <div class="modal-overlay" id="schoolDetailsModal">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h3 class="modal-title">School & Teacher Details</h3>
-                </div>
-                <div class="modal-body">
-                    <p style="margin-bottom: 15px; color: #666;">Please enter these details for the reports.</p>
-                    <div class="form-group">
-                        <label class="form-label">School Name</label>
-                        <input type="text" id="modalSchoolName" class="form-input"
-                            placeholder="e.g. Central Elementary School">
+                    <!-- Task 7: Interventions -->
+                    <div class="card task-content" id="taskinterventions">
+                        <h2 class="card-title">
+                            <span>🧠</span> Interventions
+                        </h2>
+                        <div class="reports-container">
+                            <div class="reports-inputs-row">
+                                <select id="interventionLearnerSelect" class="form-input" style="flex: 1;">
+                                    <option value="">Select a learner</option>
+                                </select>
+                                <select id="interventionIndexSelect" class="form-input"
+                                    style="flex: 1; max-width: 250px;" disabled>
+                                    <option value="">Select Assessment</option>
+                                </select>
+                            </div>
+                            <div class="reports-buttons-row">
+                                <button type="button" id="generateInterventionBtn" class="btn btn-primary">
+                                    <span>💡</span> Generate Intervention Plan
+                                </button>
+                                <button type="button" id="exportInterventionPDF" class="btn btn-success" disabled>
+                                    <span>📄</span> Export to PDF
+                                </button>
+                            </div>
+                            <div class="report-card" id="interventionPlanCard">
+                                <div class="report-header">
+                                    <h3 class="report-title">Intervention Plan</h3>
+                                </div>
+                                <div id="interventionPlanContent">
+                                    <p style="color: #6c757d; font-style: italic; text-align: center;">
+                                        Select a learner and an assessment to generate an intervention plan.
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
                     </div>
-                    <div class="form-group">
-                        <label class="form-label">Grade & Section</label>
-                        <input type="text" id="modalGradeSection" class="form-input" placeholder="e.g. Grade 1 - Rose">
-                    </div>
-                    <div class="form-group">
-                        <label class="form-label">Teacher's Name</label>
-                        <input type="text" id="modalTeacherName" class="form-input" placeholder="e.g. Mrs. Santos">
-                    </div>
-                    <div class="form-group">
-                        <label class="form-label">Assessment Feedback Voice</label>
-                        <select id="voiceSelector" class="form-input">
-                            <option value="">Default System Voice</option>
-                        </select>
-                        <p style="font-size: 0.8rem; color: #888; margin-top: 5px;">Choose a voice for assessment
-                            feedback.</p>
-                    </div>
-                </div>
-                <div class="modal-footer">
-                    <button class="btn btn-primary" id="saveSchoolDetailsBtn">Save Details</button>
                 </div>
             </div>
         </div>
+
+        <footer>
+            <p>ReadLens - Focused Literacy. Clear Results | Developed by GLENN MARK S. PRESORES and
+                ROSAVELIA O. JIMENEZ </p>
+        </footer>
+    </div>
+
+    <!-- School Details Modal -->
+    <div class="modal-overlay" id="schoolDetailsModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 class="modal-title">School & Teacher Details</h3>
+            </div>
+            <div class="modal-body">
+                <p style="margin-bottom: 15px; color: #666;">Please enter these details for the reports.</p>
+                <div class="form-group">
+                    <label class="form-label">School Name</label>
+                    <input type="text" id="modalSchoolName" class="form-input"
+                        placeholder="e.g. Central Elementary School">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Grade & Section</label>
+                    <input type="text" id="modalGradeSection" class="form-input" placeholder="e.g. Grade 1 - Rose">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Teacher's Name</label>
+                    <input type="text" id="modalTeacherName" class="form-input" placeholder="e.g. Mrs. Santos">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Assessment Feedback Voice</label>
+                    <select id="voiceSelector" class="form-input">
+                        <option value="">Default System Voice</option>
+                    </select>
+                    <p style="font-size: 0.8rem; color: #888; margin-top: 5px;">Choose a voice for assessment
+                        feedback.</p>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-primary" id="saveSchoolDetailsBtn">Save Details</button>
+            </div>
+        </div>
+    </div>
     </div> <!-- End of App Wrapper -->
 
     <!-- Include jsPDF library for PDF generation -->
@@ -4290,12 +4330,19 @@
             // ==========================================
             function updateReportsDropdown() {
                 const sel = document.getElementById('reportLearnerSelect');
-                if (!sel) return;
-                sel.innerHTML = '<option value="">Select a learner</option>';
+                const iSel = document.getElementById('interventionLearnerSelect');
+                if (!sel || !iSel) return;
+                const html = '<option value="">Select a learner</option>';
+                sel.innerHTML = html;
+                iSel.innerHTML = html;
                 if (Array.isArray(learners)) {
                     const sortedLearners = [...learners].sort((a, b) => a.name.localeCompare(b.name));
                     sortedLearners.forEach(l => {
-                        const opt = document.createElement('option'); opt.value = l.id; opt.textContent = l.name; sel.appendChild(opt);
+                        const opt = document.createElement('option');
+                        opt.value = l.id;
+                        opt.textContent = l.name;
+                        sel.appendChild(opt.cloneNode(true));
+                        iSel.appendChild(opt);
                     });
                 }
             }
@@ -4792,8 +4839,406 @@
             document.getElementById('exportClassSummaryPDF').addEventListener('click', exportClassSummaryPDF);
 
             // ==========================================
-            // UTILITIES
+            // INTERVENTIONS LOGIC
             // ==========================================
+            document.getElementById('interventionLearnerSelect').addEventListener('change', updateInterventionAssessmentDropdown);
+            document.getElementById('interventionIndexSelect').addEventListener('change', () => {
+                document.getElementById('generateInterventionBtn').disabled = !document.getElementById('interventionIndexSelect').value;
+            });
+
+            function updateInterventionAssessmentDropdown() {
+                const learnerId = document.getElementById('interventionLearnerSelect').value;
+                const assessSelect = document.getElementById('interventionIndexSelect');
+                if (!assessSelect) return;
+                assessSelect.innerHTML = '<option value="">Select Assessment</option>';
+                assessSelect.disabled = true;
+                if (!learnerId) return;
+                const learner = learners.find(l => l.id === learnerId);
+                if (learner && learner.assessments && learner.assessments.length > 0) {
+                    learner.assessments.forEach((a, index) => {
+                        const date = new Date(a.date).toLocaleDateString();
+                        const opt = document.createElement('option');
+                        opt.value = index;
+                        opt.textContent = `Assessment ${index + 1} (${date})`;
+                        assessSelect.appendChild(opt);
+                    });
+                    assessSelect.disabled = false;
+                    assessSelect.value = learner.assessments.length - 1;
+                }
+            }
+
+            document.getElementById('generateInterventionBtn').addEventListener('click', () => {
+                const learnerId = document.getElementById('interventionLearnerSelect').value;
+                const assessIdx = document.getElementById('interventionIndexSelect').value;
+                if (!learnerId || assessIdx === "") return alert("Please select learner and assessment.");
+
+                const learner = learners.find(l => l.id === learnerId);
+                const assessment = learner.assessments[assessIdx];
+
+                const plan = generateInterventionPlanData(learner, assessment);
+                renderInterventionPlan(plan);
+                document.getElementById('exportInterventionPDF').disabled = false;
+            });
+
+            function generateInterventionPlanData(learner, a) {
+                const p1 = a.part1 || {};
+                const p2 = a.part2 || {};
+                const profile = a.finalProfile;
+                const grade = learner.grade;
+
+                // 1. Identify Learner Profile Narrative
+                let learnerProfile = "Beginning Reader";
+                let narrative = "";
+
+                if (profile.includes("Grade Ready") || profile.includes("Grade Level")) {
+                    learnerProfile = "Fluent Reader";
+                    narrative = `${learner.name} demonstrates a solid foundation in literacy. They can decode words accurately and read with appropriate speed and expression. The current focus should be on advanced comprehension (inference, evaluation) and expanding vocabulary across different subjects.`;
+                } else if (profile.includes("Transitioning") || profile.includes("Developing")) {
+                    learnerProfile = "Transitioning Reader";
+                    narrative = `${learner.name} is moving into more complex reading tasks. While they have basic decoding skills, they may struggle when encountering multi-syllabic words or longer, more conceptual texts. There is a need to shift from "learning to read" to "reading to learn" by strengthening fluency and vocabulary.`;
+                } else {
+                    learnerProfile = "Beginning Reader";
+                    narrative = `${learner.name} is in the early stages of literacy development. The primary focus for this stage is establishing strong phonemic awareness and sound-letter correspondence. Without these foundational skills, progress in fluency and comprehension will be significantly hindered.`;
+                }
+
+                // 2. Granular Data Analysis and Needs Identification
+                const needs = [];
+                const analysisFlags = {
+                    decodingIssue: false,
+                    fluencyIssue: false,
+                    comprehensionIssue: false,
+                    automaticityIssue: false
+                };
+
+                if (p1.letter < 8) needs.push("Foundational Phonemic Awareness & Letter Recognition");
+
+                if (p1.sentence !== null && p1.sentence < 6) {
+                    needs.push("Basic Word-Level Decoding (CVC & Blending)");
+                    analysisFlags.decodingIssue = true;
+                }
+
+                if (p2.accuracy !== undefined) {
+                    if (p2.accuracy < 90) {
+                        needs.push("Accuracy & Word Recognition Strategies");
+                        analysisFlags.decodingIssue = true;
+                    }
+
+                    if (p2.wpm !== undefined && p2.wpm < 40) {
+                        if (p2.accuracy >= 95) {
+                            needs.push("Automaticity & Reading Pacing");
+                            analysisFlags.automaticityIssue = true;
+                        } else {
+                            needs.push("Reading Fluency & Phrasing");
+                            analysisFlags.fluencyIssue = true;
+                        }
+                    }
+                }
+
+                if (p2.comp !== undefined && p2.comp < 3) {
+                    needs.push("Deep Comprehension & Text Engagement");
+                    analysisFlags.comprehensionIssue = true;
+                }
+
+                // 3. Expert-curated Recommended Plan
+                const interventions = [];
+
+                if (needs.some(n => n.includes("Letter Recognition"))) {
+                    interventions.push({
+                        name: "Multi-Sensory Phoneme-Grapheme Mapping",
+                        focus: "Letter-Sound Correspondence (Grade " + grade + ")",
+                        materials: "Sand trays, tactile letter cards, magnetic letters, 'Sound Boxes' (Elkonin).",
+                        strategies: "Implement 'Say-It-and-Move-It' where students move a token for each sound in a word. Use tactile feedback (tracing letters on rough surfaces) while saying the sound.",
+                        steps: "1. Introduce 2-3 sounds per week. 2. Practice matching sounds to symbols. 3. Build simple VC/CVC words immediately using the new sounds.",
+                        frequency: "Daily, 15-20 mins",
+                        outcomes: "Consistent identification of target phonemes and their associated graphemes with zero hesitation."
+                    });
+                }
+
+                if (analysisFlags.decodingIssue) {
+                    interventions.push({
+                        name: "Structured Phonics & Syllable Segmentation",
+                        focus: "Decoding Strategies for Unfamiliar Words",
+                        materials: "Decodable readers, syllable tiles, word ladders.",
+                        strategies: "Teach specific syllable types (Closed, Open, Silent e). Use 'Marking' or 'Scooping' syllables to help break down longer words.",
+                        steps: "1. Explicitly teach a phonetic rule. 2. Practice in isolation (word lists). 3. Immediate application in decodable text. 4. Word building with tiles.",
+                        frequency: "3-4 times/week, 20 mins",
+                        outcomes: "Correctly segment and blend unfamiliar words in a grade-level text with 95% accuracy."
+                    });
+                }
+
+                if (analysisFlags.fluencyIssue || analysisFlags.automaticityIssue) {
+                    const isAuto = analysisFlags.automaticityIssue;
+                    interventions.push({
+                        name: isAuto ? "Timed Repeated Reading for Speed" : "Repeated Reading for Prosody",
+                        focus: isAuto ? "Processing Speed & Pacing" : "Accuracy & Expression",
+                        materials: "Tier-2 or Tier-3 fluency passages (at student's instructional level), stopwatch, tracking graph.",
+                        strategies: "Use 'Paired Reading' (more able peer or teacher models, then student mimics). Use 'Choral Reading' to build confidence.",
+                        steps: "1. Teacher reads while student follows. 2. Student reads same passage 3-4 times. 3. Track time or accuracy on a simple graph to visualize growth.",
+                        frequency: "Daily, 15 mins",
+                        outcomes: "Increase of 10-15 Words Correct Per Minute (WCPM) over a 2-week period."
+                    });
+                }
+
+                if (analysisFlags.comprehensionIssue) {
+                    interventions.push({
+                        name: "Cognitive Strategy Instruction (Meta-Comprehension)",
+                        focus: "Inferring and Summarizing Text",
+                        materials: "Graphic organizers (Story Maps, Venn Diagrams), Sticky notes for 'Stop and Think'.",
+                        strategies: "Implement 'Question-Answer Relationship' (QAR) techniques. Model 'Think-Alouds' where you narrate your mental process while reading.",
+                        steps: "1. Pre-reading (Predicting based on title). 2. During reading (Pausing for specific questions). 3. Post-reading (Retelling using 'First, Next, Then, Finally').",
+                        frequency: "2-3 times/week, 25 mins",
+                        outcomes: "Accurately summarize main ideas and correctly answer 4 out of 5 inferential questions."
+                    });
+                }
+
+                // Default for advanced students
+                if (interventions.length === 0) {
+                    interventions.push({
+                        name: "Reader's Workshop & Textual Analysis",
+                        focus: "Critical Thinking & Vocabulary Expansion",
+                        materials: "Novel studies, expository texts, vocabulary journals.",
+                        strategies: "Individual research projects based on interest. 'Literature Circles' to discuss character development or author's purpose.",
+                        steps: "1. Set a reading goal for the week. 2. Maintain a double-entry journal (quotes and reflections). 3. Conduct weekly peer discussions.",
+                        frequency: "Ongoing class integration",
+                        outcomes: "Deeper engagement with text and successfully using 5+ new high-tier vocabulary words in writing/speech per week."
+                    });
+                }
+
+                return {
+                    learner: learner.name,
+                    date: new Date(a.date).toLocaleDateString(),
+                    profile: learnerProfile,
+                    narrative: narrative,
+                    readingNeeds: needs.length > 0 ? needs : ["Advanced Literacy Development"],
+                    plan: interventions,
+                    monitoring: [
+                        "Weekly 'Cold Read' vs 'Hot Read' WCPM comparison.",
+                        "Bi-weekly running records on instructional level text.",
+                        "Student self-assessment checklist (Did I pause at periods? Did I use context clues?).",
+                        "Pre- and post-intervention assessments using equivalent standardized forms."
+                    ]
+                };
+            }
+
+            function renderInterventionPlan(p) {
+                let html = `
+                    <div style="background: white; border: 1px solid #e1e4e8; border-radius: 12px; padding: 20px; box-shadow: 0 2px 10px rgba(0,0,0,0.05); margin-bottom: 25px;">
+                        <div style="display: flex; align-items: flex-start; gap: 15px; margin-bottom: 15px;">
+                            <div style="background: var(--primary); color: white; width: 45px; height: 45px; border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 1.5rem;">
+                                👤
+                            </div>
+                            <div style="flex: 1;">
+                                <h4 style="margin: 0; color: var(--secondary); font-size: 1.25rem;">${p.learner}</h4>
+                                <p style="margin: 3px 0; color: #586069; font-size: 0.95rem;"><strong>Current Status:</strong> ${p.profile} | <strong>Assessed:</strong> ${p.date}</p>
+                            </div>
+                        </div>
+                        <p style="background: #f1f8ff; padding: 15px; border-radius: 8px; font-size: 1rem; line-height: 1.6; border-left: 4px solid var(--primary); margin: 0;">
+                            ${p.narrative}
+                        </p>
+                    </div>
+                `;
+
+                html += `
+                    <div style="margin-bottom: 25px; padding-left: 10px;">
+                        <h4 style="color: var(--accent); margin-bottom: 12px; display: flex; align-items: center; gap: 8px;">
+                            <span style="font-size: 1.3rem;">🎯</span> Identified Reading Needs
+                        </h4>
+                        <div style="display: flex; flex-wrap: wrap; gap: 10px;">
+                            ${p.readingNeeds.map(n => `<span style="background: #fff5f5; color: #c0392b; border: 1px solid #ffc9c9; padding: 6px 12px; border-radius: 20px; font-size: 0.9rem; font-weight: 600;">${n}</span>`).join('')}
+                        </div>
+                    </div>
+                `;
+
+                html += `<h4 style="margin-bottom: 15px; display: flex; align-items: center; gap: 8px; padding-left: 10px;">
+                    <span style="font-size: 1.3rem;">📋</span> Recommended Intervention Plan
+                </h4>`;
+
+                p.plan.forEach(i => {
+                    html += `
+                        <div style="background: white; border: 1px solid #eee; border-radius: 12px; margin-bottom: 20px; overflow: hidden; box-shadow: 0 4px 6px rgba(0,0,0,0.02);">
+                            <div style="background: #f8f9fa; padding: 12px 20px; border-bottom: 1px solid #eee; display: flex; justify-content: space-between; align-items: center;">
+                                <h5 style="margin: 0; color: var(--primary); font-size: 1.1rem; font-weight: 700;">${i.name}</h5>
+                                <span style="background: #e1f5fe; color: #0288d1; padding: 3px 10px; border-radius: 5px; font-size: 0.8rem; font-weight: bold;">${i.frequency}</span>
+                            </div>
+                            <div style="padding: 20px;">
+                                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 15px;">
+                                    <div>
+                                        <p style="margin: 0 0 5px 0; font-size: 0.8rem; text-transform: uppercase; color: #6a737d; font-weight: 700;">Focus</p>
+                                        <p style="margin: 0; font-size: 0.95rem;">${i.focus}</p>
+                                    </div>
+                                    <div>
+                                        <p style="margin: 0 0 5px 0; font-size: 0.8rem; text-transform: uppercase; color: #6a737d; font-weight: 700;">Materials</p>
+                                        <p style="margin: 0; font-size: 0.95rem;">${i.materials || "Standard classroom tools"}</p>
+                                    </div>
+                                </div>
+                                <div style="margin-bottom: 15px;">
+                                    <p style="margin: 0 0 5px 0; font-size: 0.8rem; text-transform: uppercase; color: #6a737d; font-weight: 700;">Strategies</p>
+                                    <p style="margin: 0; font-size: 0.95rem; line-height: 1.5;">${i.strategies}</p>
+                                </div>
+                                <div style="margin-bottom: 15px;">
+                                    <p style="margin: 0 0 5px 0; font-size: 0.8rem; text-transform: uppercase; color: #6a737d; font-weight: 700;">Implementation Steps</p>
+                                    <p style="margin: 0; font-size: 0.95rem; line-height: 1.5; color: #444;">${i.steps}</p>
+                                </div>
+                                <div style="background: #f6ffed; border: 1px solid #b7eb8f; padding: 10px 15px; border-radius: 8px; display: flex; align-items: center; gap: 10px;">
+                                    <span style="font-size: 1.1rem;">✅</span>
+                                    <p style="margin:0; font-size: 0.9rem; color: #389e0d;"><strong>Expected Outcome:</strong> ${i.outcomes}</p>
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                });
+
+                html += `
+                    <div style="margin-top: 25px; border: 2px dashed #e1e4e8; padding: 20px; border-radius: 12px; background: #fafbfc;">
+                        <h4 style="margin: 0 0 12px 0; color: var(--secondary); font-size: 1.1rem;">📉 Suggested Monitoring Indicators</h4>
+                        <ul style="padding-left: 20px; margin: 0; font-size: 0.95rem; color: #444;">
+                            ${p.monitoring.map(m => `<li style="margin-bottom: 8px;">${m}</li>`).join('')}
+                        </ul>
+                    </div>
+                `;
+
+                document.getElementById('interventionPlanContent').innerHTML = html;
+                window.currentInterventionPlan = p; // Store for PDF
+            }
+
+            document.getElementById('exportInterventionPDF').addEventListener('click', () => {
+                if (!window.currentInterventionPlan) return;
+                const p = window.currentInterventionPlan;
+                try {
+                    const { jsPDF } = window.jspdf;
+                    const doc = new jsPDF();
+
+                    const school = localStorage.getItem('crlaSchoolName') || "";
+                    const teacher = localStorage.getItem('crlaTeacherName') || "";
+
+                    // Header
+                    doc.setFillColor(26, 60, 94);
+                    doc.rect(0, 0, 210, 40, 'F');
+                    doc.setFontSize(24);
+                    doc.setFont("helvetica", "bold");
+                    doc.setTextColor(255, 255, 255);
+                    doc.text("Reading Intervention Plan", 105, 18, { align: "center" });
+                    doc.setFontSize(10);
+                    doc.setFont("helvetica", "normal");
+                    doc.text(`Generated for ${p.learner} via ReadLens`, 105, 28, { align: "center" });
+                    doc.setFontSize(9);
+                    doc.text(`School: ${school} | Teacher: ${teacher}`, 105, 34, { align: "center" });
+
+                    let y = 50;
+
+                    // Profile Section
+                    doc.setTextColor(26, 60, 94);
+                    doc.setFontSize(14);
+                    doc.setFont("helvetica", "bold");
+                    doc.text("Learner Profile Summary", 14, y);
+                    y += 6;
+                    doc.setFontSize(10);
+                    doc.setTextColor(80, 80, 80);
+                    doc.text(`Recommended Stage: ${p.profile} | Assessment Date: ${p.date}`, 14, y);
+                    y += 8;
+                    doc.setFontSize(10);
+                    doc.setFont("helvetica", "normal");
+                    doc.setTextColor(0, 0, 0);
+                    const narrativeLines = doc.splitTextToSize(p.narrative, 180);
+                    doc.text(narrativeLines, 14, y);
+                    y += (narrativeLines.length * 5) + 8;
+
+                    // Needs
+                    doc.setTextColor(231, 76, 60);
+                    doc.setFontSize(14);
+                    doc.setFont("helvetica", "bold");
+                    doc.text("Identified Reading Needs", 14, y);
+                    y += 7;
+                    doc.setFontSize(10);
+                    doc.setFont("helvetica", "normal");
+                    doc.setTextColor(0, 0, 0);
+                    p.readingNeeds.forEach((n, i) => {
+                        doc.text(`• ${n}`, 18, y);
+                        y += 6;
+                    });
+                    y += 4;
+
+                    // Recommended Interventions
+                    doc.setTextColor(26, 60, 94);
+                    doc.setFontSize(14);
+                    doc.setFont("helvetica", "bold");
+                    doc.text("Recommended Interventions & Strategies", 14, y);
+                    y += 8;
+
+                    p.plan.forEach(i => {
+                        if (y > 240) { doc.addPage(); y = 20; }
+
+                        // Intervention Card-like appearance
+                        doc.setFillColor(248, 249, 250);
+                        doc.rect(14, y - 5, 182, 45, 'F'); // Approximate height, dynamically adjusted below
+
+                        doc.setFontSize(11);
+                        doc.setFont("helvetica", "bold");
+                        doc.setTextColor(52, 152, 219);
+                        doc.text(i.name, 18, y);
+
+                        doc.setFontSize(8);
+                        doc.setTextColor(100, 100, 100);
+                        doc.text(i.frequency, 190, y, { align: "right" });
+
+                        y += 6;
+                        doc.setFontSize(9);
+                        doc.setTextColor(0, 0, 0);
+                        doc.setFont("helvetica", "bold");
+                        doc.text("Focus:", 18, y);
+                        doc.setFont("helvetica", "normal");
+                        doc.text(i.focus, 35, y);
+
+                        y += 5;
+                        doc.setFont("helvetica", "bold");
+                        doc.text("Materials:", 18, y);
+                        doc.setFont("helvetica", "normal");
+                        doc.text(i.materials || "N/A", 35, y);
+
+                        y += 6;
+                        const stratLines = doc.splitTextToSize(`Strategies: ${i.strategies}`, 170);
+                        doc.text(stratLines, 18, y);
+                        y += (stratLines.length * 5);
+
+                        const stepLines = doc.splitTextToSize(`Steps: ${i.steps}`, 170);
+                        doc.text(stepLines, 18, y);
+                        y += (stepLines.length * 5);
+
+                        doc.setTextColor(39, 174, 96);
+                        doc.setFont("helvetica", "bold");
+                        doc.text(`Expected Outcome: ${i.outcomes}`, 18, y);
+                        y += 10;
+                        doc.setTextColor(0, 0, 0);
+                        doc.setFont("helvetica", "normal");
+                    });
+
+                    // Monitoring
+                    if (y > 230) { doc.addPage(); y = 20; }
+                    doc.setTextColor(26, 60, 94);
+                    doc.setFontSize(14);
+                    doc.setFont("helvetica", "bold");
+                    doc.text("Progress Monitoring Indicators", 14, y);
+                    y += 8;
+                    doc.setFontSize(10);
+                    doc.setFont("helvetica", "normal");
+                    doc.setTextColor(0, 0, 0);
+                    p.monitoring.forEach(m => {
+                        doc.text(`• ${m}`, 18, y);
+                        y += 6;
+                    });
+
+                    // Footer
+                    const pageCount = doc.internal.getNumberOfPages();
+                    for (let i = 1; i <= pageCount; i++) {
+                        doc.setPage(i);
+                        doc.setFontSize(8);
+                        doc.setTextColor(150, 150, 150);
+                        doc.text(`Page ${i} of ${pageCount} | ReadLens Assessment System`, 105, 290, { align: "center" });
+                    }
+
+                    doc.save(`Intervention_Plan_${p.learner.replace(/\s+/g, '_')}.pdf`);
+                } catch (e) { console.error(e); alert("PDF Error"); }
+            });
             function switchTask(taskId) {
                 document.querySelectorAll('.task-item').forEach(i => i.classList.remove('active'));
                 document.querySelectorAll('.task-content').forEach(c => c.classList.remove('active'));
