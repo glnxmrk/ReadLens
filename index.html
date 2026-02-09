@@ -1924,6 +1924,22 @@
                                     </div>
                                 </div>
 
+                                <div class="form-group" style="margin-top: 15px;">
+                                    <label class="form-label" for="assessmentTypeSelect">Assessment Type:</label>
+                                    <select id="assessmentTypeSelect" class="form-input">
+                                        <option value="Quarter I Pre-test">Quarter I Pre-test</option>
+                                        <option value="Quarter I Post-test">Quarter I Post-test</option>
+                                        <option value="Quarter II Pre-test">Quarter II Pre-test</option>
+                                        <option value="Quarter II Post-test">Quarter II Post-test</option>
+                                        <option value="Quarter III Pre-test">Quarter III Pre-test</option>
+                                        <option value="Quarter III Post-test">Quarter III Post-test</option>
+                                        <option value="Quarter IV Pre-test">Quarter IV Pre-test</option>
+                                        <option value="Quarter IV Post-test">Quarter IV Post-test</option>
+                                        <option value="Buffer Pre-test">Buffer Pre-test</option>
+                                        <option value="Buffer Post-test">Buffer Post-test</option>
+                                    </select>
+                                </div>
+
                                 <div class="controls" style="margin-top: 20px;">
                                     <button id="startAssessment" class="btn btn-primary" disabled>
                                         <span>📝</span> Start Assessment
@@ -2534,9 +2550,22 @@
                 return false;
             };
 
+            // GLOBAL ERROR HANDLER
+            window.onerror = function (msg, url, lineNo, columnNo, error) {
+                console.error("Global Error:", msg, error);
+                return false;
+            };
+
+            // ==========================================
+            // GLOBAL VARIABLES
+            // ==========================================
+            const USER_EDITS_KEY = 'readLens_userEdits';
+            let userEdits = {};
+
             // ==========================================
             // AUTHENTICATION LOGIC
             // ==========================================
+
             const authWrapper = document.getElementById('authWrapper');
             const appWrapper = document.getElementById('appWrapper');
             const loginSection = document.getElementById('loginFormSection');
@@ -2633,6 +2662,17 @@
             function initializeApp() {
                 console.log("Initializing App...");
 
+                // 0. Load User Edits and Cache FIRST
+                try {
+                    const savedEdits = localStorage.getItem(USER_EDITS_KEY);
+                    if (savedEdits) {
+                        userEdits = JSON.parse(savedEdits);
+                        console.log("User edits loaded:", userEdits);
+                    }
+                } catch (e) {
+                    console.error("Failed to load user edits:", e);
+                }
+
                 // 1. Initialize Tabs (Priority)
                 const taskItems = document.querySelectorAll('.task-item');
                 taskItems.forEach(item => {
@@ -2653,15 +2693,7 @@
                 safeInit(renderAllLearnersTable);
                 safeInit(updateDashboardDropdown);
 
-                // Load user edits from localStorage
-                try {
-                    const savedEdits = localStorage.getItem(USER_EDITS_KEY);
-                    if (savedEdits) {
-                        userEdits = JSON.parse(savedEdits);
-                    }
-                } catch (e) {
-                    console.error("Failed to load user edits:", e);
-                }
+                safeInit(updateDashboardDropdown);
 
                 // 3. Ensure we start at Dashboard
                 switchTask('dashboard');
@@ -2892,16 +2924,10 @@
             let learners = [];
             let currentLearnerId = null;
             let activeAssessmentLang = "";
+            let activeAssessmentLabel = ""; // Stores "Quarter I Pre-test", etc.
             let task1WordMiscues = {}; // { itemIdx: [wordIdx, ...] }
 
-            // NEW: In-memory cache for user edits during the session
-            let userEdits = {
-                task1: {}, // { grade: { lang: [items] } }
-                task2: {}, // { grade: { lang: [sentences] } }
-                task3: {}, // { grade: { lang: [items] } }
-                task4: null  // [story objects]
-            };
-            const USER_EDITS_KEY = 'crlaUserEdits';
+            // DEFAULT DATA SETS
 
             // DEFAULT DATA SETS
             const assessmentData = {
@@ -2984,7 +3010,14 @@
                 if (clearBtn) clearBtn.addEventListener('click', clearEnrollmentForm);
 
                 const startBtn = document.getElementById('startAssessment');
-                if (startBtn) startBtn.addEventListener('click', () => switchTask('1'));
+                if (startBtn) startBtn.addEventListener('click', () => {
+                    const typeSelect = document.getElementById('assessmentTypeSelect');
+                    if (typeSelect) {
+                        activeAssessmentLabel = typeSelect.value;
+                        console.log("Assessment Type Selected:", activeAssessmentLabel);
+                    }
+                    switchTask('1');
+                });
 
                 const removeBtn = document.getElementById('removeLearner');
                 if (removeBtn) removeBtn.addEventListener('click', removeSelectedLearner);
@@ -3825,6 +3858,28 @@
                     document.getElementById('storyEditArea').style.display = 'block';
                 });
 
+                document.getElementById('deleteStoryBtn').addEventListener('click', () => {
+                    if (storyPassages.length <= 1) {
+                        alert("Cannot delete the last story. You must have at least one story.");
+                        return;
+                    }
+
+                    if (confirm("Are you sure you want to delete this story? This cannot be undone.")) {
+                        storyPassages.splice(currentStoryIdx, 1);
+                        userEdits.task4 = storyPassages;
+                        localStorage.setItem(USER_EDITS_KEY, JSON.stringify(userEdits));
+
+                        // Adjust index if we deleted the last item
+                        if (currentStoryIdx >= storyPassages.length) {
+                            currentStoryIdx = storyPassages.length - 1;
+                        }
+
+                        renderStorySelect();
+                        renderStoryDisplay();
+                        alert("Story deleted.");
+                    }
+                });
+
                 document.getElementById('storyPassageSelect').addEventListener('change', (e) => {
                     currentStoryIdx = parseInt(e.target.value); renderStoryDisplay();
                 });
@@ -3966,6 +4021,15 @@
                     timerInterval = setInterval(() => {
                         remainingTime--;
                         updateTimerDisplay();
+
+                        if (remainingTime === 1) {
+                            const sound = document.getElementById('announcementSound');
+                            if (sound) {
+                                sound.currentTime = 0;
+                                sound.play().catch(e => console.log("Audio play failed", e));
+                            }
+                        }
+
                         if (remainingTime <= 0) {
                             clearInterval(timerInterval);
                             isTimerRunning = false;
@@ -4092,6 +4156,7 @@
                 }
                 const rec = {
                     date: new Date().toISOString(),
+                    assessmentLabel: activeAssessmentLabel, // NEW: Saved Label
                     part1: {
                         letter: totalLetterScore,
                         sentence: autoRhymeScore ? parseInt(document.getElementById('sentenceScoreDisplay').textContent) : null,
@@ -4208,7 +4273,8 @@
                             const p1Desc = `${p1.profile || '-'} (L:${p1.letter ?? '-'}, S:${p1.sentence ?? '-'}, R:${p1.rhyme ?? '-'})`;
                             let p2 = "Skipped";
                             if (a.part2) p2 = `WPM:${a.part2.wpm}, Acc:${a.part2.accuracy}%, Comp:${a.part2.comp}`;
-                            html += `<tr><td>${date}</td><td>${p1Desc}</td><td>${p2}</td><td><strong>${a.finalProfile || '-'}</strong></td></tr>`;
+                            const type = a.assessmentLabel ? `<br><small style="color:#666">${a.assessmentLabel}</small>` : '';
+                            html += `<tr><td>${date}${type}</td><td>${p1Desc}</td><td>${p2}</td><td><strong>${a.finalProfile || '-'}</strong></td></tr>`;
                         });
                         html += `</tbody></table>`;
                     }
@@ -4242,10 +4308,11 @@
                         percentage = Math.round((acc + comp) / 2) + "%";
                     }
 
+                    const type = a.assessmentLabel ? `<br><small style="color:#666">${a.assessmentLabel}</small>` : '';
                     const tr = document.createElement('tr');
                     tr.innerHTML = `
                         <td>${index + 1}</td>
-                        <td>${date}</td>
+                        <td>${date}${type}</td>
                         <td>${profile}</td>
                         <td><strong>${percentage}</strong></td>
                     `;
@@ -4383,7 +4450,11 @@
                 if (learner && learner.assessments && learner.assessments.length > 0) {
                     learner.assessments.forEach((a, index) => {
                         const date = new Date(a.date).toLocaleDateString();
-                        const opt = document.createElement('option'); opt.value = index; opt.textContent = `Assessment ${index + 1} (${date})`; assessSelect.appendChild(opt);
+                        const opt = document.createElement('option');
+                        const label = a.assessmentLabel ? a.assessmentLabel : `Assessment ${index + 1}`;
+                        opt.value = index;
+                        opt.textContent = `${label} (${date})`;
+                        assessSelect.appendChild(opt);
                     });
                     assessSelect.disabled = false; assessSelect.value = learner.assessments.length - 1;
                 }
@@ -4400,7 +4471,23 @@
                 if (learners) learners.forEach(l => { if (l.assessments && l.assessments.length > max) max = l.assessments.length; });
                 const current = sel.value;
                 let html = '<option value="latest">Latest Assessment</option>';
-                for (let i = 0; i < max; i++) html += `<option value="${i}">Assessment ${i + 1}</option>`;
+
+                // Collect assessment labels for each index
+                for (let i = 0; i < max; i++) {
+                    // Try to find a label from any learner at this assessment index
+                    let label = null;
+                    if (learners) {
+                        for (let l of learners) {
+                            if (l.assessments && l.assessments[i] && l.assessments[i].assessmentLabel) {
+                                label = l.assessments[i].assessmentLabel;
+                                break;
+                            }
+                        }
+                    }
+                    const displayText = label ? label : `Assessment ${i + 1}`;
+                    html += `<option value="${i}">${displayText}</option>`;
+                }
+
                 sel.innerHTML = html;
                 if (current && (current === 'latest' || parseInt(current) < max)) sel.value = current;
             }
@@ -4585,7 +4672,19 @@
                     doc.text("ReadLens", 14, 20);
 
                     doc.setFontSize(14);
-                    const periodText = isLatest ? "Latest Assessment" : `Assessment ${periodIdx + 1}`;
+                    // Get assessment label if available
+                    let periodText = "Latest Assessment";
+                    if (!isLatest) {
+                        // Try to find a label from any learner at this assessment index
+                        let label = null;
+                        for (let l of learners) {
+                            if (l.assessments && l.assessments[periodIdx] && l.assessments[periodIdx].assessmentLabel) {
+                                label = l.assessments[periodIdx].assessmentLabel;
+                                break;
+                            }
+                        }
+                        periodText = label ? label : `Assessment ${periodIdx + 1}`;
+                    }
                     doc.text(`Reading Scoresheet - ${periodText}`, 14, 28);
 
                     doc.setFontSize(10);
@@ -4672,7 +4771,19 @@
                     doc.text("ReadLens", 14, 20);
 
                     doc.setFontSize(14);
-                    const periodText = isLatest ? "Latest Assessment" : `Assessment ${periodIdx + 1}`;
+                    // Get assessment label if available
+                    let periodText = "Latest Assessment";
+                    if (!isLatest) {
+                        // Try to find a label from any learner at this assessment index
+                        let label = null;
+                        for (let l of learners) {
+                            if (l.assessments && l.assessments[periodIdx] && l.assessments[periodIdx].assessmentLabel) {
+                                label = l.assessments[periodIdx].assessmentLabel;
+                                break;
+                            }
+                        }
+                        periodText = label ? label : `Assessment ${periodIdx + 1}`;
+                    }
                     doc.text(`Class Record - ${periodText}`, 14, 28);
 
                     doc.setFontSize(10);
@@ -4757,7 +4868,19 @@
                     doc.text("ReadLens", 105, 20, { align: "center" });
                     doc.setFontSize(16);
                     doc.setFont("helvetica", "normal");
-                    const periodText = isLatest ? "Latest Assessment" : `Assessment ${periodIdx + 1}`;
+                    // Get assessment label if available
+                    let periodText = "Latest Assessment";
+                    if (!isLatest) {
+                        // Try to find a label from any learner at this assessment index
+                        let label = null;
+                        for (let l of learners) {
+                            if (l.assessments && l.assessments[periodIdx] && l.assessments[periodIdx].assessmentLabel) {
+                                label = l.assessments[periodIdx].assessmentLabel;
+                                break;
+                            }
+                        }
+                        periodText = label ? label : `Assessment ${periodIdx + 1}`;
+                    }
                     doc.text(`Class Summary - ${periodText}`, 105, 28, { align: "center" });
 
                     doc.setFontSize(10);
@@ -5332,6 +5455,14 @@
         }
     </script>
     <!-- Version Update: 2026-02-08 11:07 -->
+
+    <!-- Timer Sound -->
+    <audio id="announcementSound" preload="auto">
+        <source src="https://orangefreesounds.com/wp-content/uploads/2024/04/Plane-notification-sound.mp3"
+            type="audio/mpeg">
+        Your browser does not support the audio element.
+    </audio>
+
 </body>
 
 </html>
