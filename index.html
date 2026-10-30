@@ -758,14 +758,32 @@
             display: flex;
             flex-direction: column;
             justify-content: space-between;
-            min-height: calc(100vh - 54px);
+            height: calc(100vh - 54px);
+            max-height: calc(100vh - 54px);
+            position: sticky;
+            top: 54px;
+            overflow: hidden !important;
+            overscroll-behavior: none;
             transition: width 0.22s cubic-bezier(0.4, 0, 0.2, 1), min-width 0.22s cubic-bezier(0.4, 0, 0.2, 1), max-width 0.22s cubic-bezier(0.4, 0, 0.2, 1);
-            position: relative;
             z-index: 100;
             box-shadow: 2px 0 8px rgba(0, 0, 0, 0.1);
             box-sizing: border-box;
             border-right: 1px solid #0f172a;
             flex-shrink: 0;
+            user-select: none;
+        }
+
+        .tasks-panel,
+        .tasks-panel * {
+            scrollbar-width: none !important;
+            -ms-overflow-style: none !important;
+        }
+
+        .tasks-panel::-webkit-scrollbar,
+        .tasks-panel *::-webkit-scrollbar {
+            display: none !important;
+            width: 0 !important;
+            height: 0 !important;
         }
 
         .tasks-panel.collapsed {
@@ -778,9 +796,10 @@
             display: flex;
             align-items: center;
             justify-content: space-between;
-            padding: 14px 16px 10px 16px;
+            padding: 10px 14px 6px 14px;
             border-bottom: 1px solid rgba(255, 255, 255, 0.06);
-            margin-bottom: 6px;
+            margin-bottom: 3px;
+            flex-shrink: 0;
         }
 
         .sidebar-nav-heading {
@@ -817,7 +836,7 @@
 
         .tasks-panel.collapsed .sidebar-nav-header {
             justify-content: center;
-            padding: 12px 0 8px 0;
+            padding: 10px 0 6px 0;
         }
 
         .task-list {
@@ -826,18 +845,20 @@
             margin: 0;
             display: flex;
             flex-direction: column;
-            gap: 2px;
-            flex: 1;
+            gap: 1px;
+            flex: 1 1 auto;
+            min-height: 0;
+            overflow: hidden !important;
         }
 
         .task-item {
             display: flex;
             align-items: center;
-            gap: 12px;
-            padding: 10px 14px;
-            margin: 2px 10px;
-            border-radius: 8px;
-            font-size: 0.9rem;
+            gap: 10px;
+            padding: 7px 12px;
+            margin: 1px 8px;
+            border-radius: 7px;
+            font-size: 0.85rem;
             font-weight: 500;
             color: #cbd5e1;
             cursor: pointer;
@@ -847,6 +868,7 @@
             background: transparent;
             border: none;
             box-shadow: none;
+            flex-shrink: 0;
         }
 
         .task-item:hover {
@@ -887,9 +909,9 @@
 
         .tasks-panel.collapsed .task-item {
             justify-content: center;
-            padding: 10px 0;
-            margin: 4px 6px;
-            border-radius: 8px;
+            padding: 7px 0;
+            margin: 2px 6px;
+            border-radius: 7px;
         }
 
         .tasks-panel.collapsed .task-label-text {
@@ -952,9 +974,10 @@
             background: rgba(255, 255, 255, 0.04);
             border: 1px solid rgba(255, 255, 255, 0.08);
             border-radius: 8px;
-            margin: 10px;
-            padding: 10px;
+            margin: 6px 8px;
+            padding: 7px 10px;
             box-sizing: border-box;
+            flex-shrink: 0;
         }
 
         .sidebar-learner-header {
@@ -1544,6 +1567,33 @@
         .sf1-badge-new {
             background: #d4edda;
             color: #155724;
+        }
+
+        /* Passage Upload Button & Controls (Task 1 - 4) */
+        .btn-upload-passage {
+            display: inline-flex;
+            align-items: center;
+            gap: 7px;
+            background: linear-gradient(135deg, #1d4ed8 0%, #3b82f6 100%) !important;
+            color: #ffffff !important;
+            font-weight: 600 !important;
+            border: none !important;
+            border-radius: 8px !important;
+            padding: 8px 14px !important;
+            font-size: 0.9rem !important;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            box-shadow: 0 2px 4px rgba(37, 99, 235, 0.25);
+        }
+
+        .btn-upload-passage:hover {
+            background: linear-gradient(135deg, #1e40af 0%, #2563eb 100%) !important;
+            transform: translateY(-1px);
+            box-shadow: 0 4px 8px rgba(37, 99, 235, 0.35);
+        }
+
+        .btn-upload-passage:active {
+            transform: translateY(0);
         }
 
         /* Modal Styles */
@@ -2152,11 +2202,27 @@
             }
         }
 
-        footer {
+        footer,
+        .app-main-footer {
             text-align: center;
-            margin-top: 40px;
-            color: white;
-            opacity: 0.8;
+            margin-top: 32px;
+            padding: 18px 10px 16px 10px;
+            color: #475569;
+            font-size: 0.85rem;
+            font-weight: 600;
+            letter-spacing: 0.3px;
+            border-top: 1px solid #e2e8f0;
+            background: transparent;
+            width: 100%;
+            box-sizing: border-box;
+        }
+
+        footer p,
+        .app-main-footer p {
+            margin: 0;
+            color: #475569;
+            line-height: 1.5;
+            font-size: 0.85rem;
         }
 
         /* --- DASHBOARD STYLES --- */
@@ -2325,6 +2391,10 @@
                 min-width: 100%;
                 max-width: 100%;
                 min-height: auto;
+                height: auto;
+                max-height: none;
+                position: relative;
+                top: 0;
             }
 
             .tasks-panel.collapsed {
@@ -2428,6 +2498,9 @@
                 </div>
             </div>
         </div>
+        <div class="auth-footer-credits" style="text-align: center; margin-top: 18px; color: rgba(255, 255, 255, 0.92); font-size: 0.82rem; font-weight: 500; letter-spacing: 0.3px;">
+            ReadLens - Focused Literacy. Clear Results | Developed by GLENN MARK S. PRESORES and ROSAVELIA O. JIMENEZ
+        </div>
     </div>
 
     <!-- MAIN APP CONTAINER (Hidden until login) -->
@@ -2469,8 +2542,7 @@
 
             <div class="assessment-container">
                 <aside class="tasks-panel" id="tasksSidePanel" aria-label="Navigation & Tasks">
-                    <div>
-                        <div class="sidebar-nav-header">
+                    <div class="sidebar-nav-header">
                             <span class="sidebar-nav-heading">MENU NAVIGATION</span>
                             <button type="button" class="sidebar-collapse-btn" id="btnToggleSidePanel" title="Collapse Menu" aria-label="Collapse Menu">
                                 <i class="fas fa-angle-double-left"></i>
@@ -2541,7 +2613,6 @@
                                 </select>
                             </div>
                         </div>
-                    </div>
                 </aside>
 
                 <div class="assessment-panel">
@@ -2582,10 +2653,10 @@
                         </h2>
 
                         <div class="dashboard-controls">
-                            <div style="display: flex; align-items: center; gap: 10px;">
+                            <div style="display: flex; align-items: center; gap: 10px; flex-wrap: wrap;">
                                 <strong>Data Source:</strong>
                                 <select id="dashboardAssessmentPeriod" class="form-input"
-                                    style="padding: 5px; font-size: 0.9rem; width: auto; max-width: 200px;">
+                                    style="padding: 6px 12px; font-size: 0.9rem; min-width: 280px; max-width: 380px; font-weight: 600;">
                                     <option value="latest">Latest Assessment</option>
                                 </select>
                             </div>
@@ -2807,17 +2878,25 @@
                                 <strong>Items to assess:</strong>
                             </div>
 
-                            <div class="controls" style="margin-bottom: 15px;">
+                            <div class="controls" style="margin-bottom: 15px; display: flex; gap: 10px; flex-wrap: wrap; align-items: center;">
                                 <button class="btn btn-secondary hidden" id="toggleTask1Edit">
                                     <span>✏️</span> Edit Sentences
+                                </button>
+                                <button class="btn btn-upload-passage" id="btnUploadTask1" type="button" title="Upload PDF, Word DOC, or Picture">
+                                    <i class="fas fa-file-upload"></i> Upload Passage / Items (PDF/DOC/Pic)
                                 </button>
                             </div>
 
                             <div id="task1EditArea" class="edit-area-container">
                                 <textarea id="task1Input" class="edit-textarea" rows="4"
                                     placeholder="Enter sentences, one per line (at least 2)."></textarea>
-                                <button class="btn btn-success" id="saveTask1Sentences">Save</button>
-                                <button class="btn btn-secondary" id="cancelTask1Edit">Cancel</button>
+                                <div style="display: flex; gap: 10px; flex-wrap: wrap; margin-top: 8px;">
+                                    <button class="btn btn-success" id="saveTask1Sentences">Save</button>
+                                    <button class="btn btn-secondary" id="btnUploadTask1InEdit" type="button">
+                                        <i class="fas fa-file-upload"></i> Upload File
+                                    </button>
+                                    <button class="btn btn-secondary" id="cancelTask1Edit">Cancel</button>
+                                </div>
                             </div>
 
                             <div class="letters-container" id="lettersContainer"></div>
@@ -2858,15 +2937,24 @@
                         <p>Learner reads the sentences below. Click on a word to mark a miscue.</p>
 
                         <div class="assessment-item">
-                            <div class="controls" style="margin-bottom: 15px;">
+                            <div class="controls" style="margin-bottom: 15px; display: flex; gap: 10px; flex-wrap: wrap; align-items: center;">
                                 <button class="btn btn-secondary" id="toggleSentenceEdit">
                                     <span>✏️</span> Edit Sentences
+                                </button>
+                                <button class="btn btn-upload-passage" id="btnUploadTask2" type="button" title="Upload PDF, Word DOC, or Picture">
+                                    <i class="fas fa-file-upload"></i> Upload Sentences (PDF/DOC/Pic)
                                 </button>
                             </div>
 
                             <div id="sentenceEditArea" class="edit-area-container">
-                                <textarea id="sentenceInput" class="edit-textarea" rows="4"></textarea>
-                                <button class="btn btn-success" id="saveSentences">Save</button>
+                                <textarea id="sentenceInput" class="edit-textarea" rows="4" placeholder="Enter sentences, one per line..."></textarea>
+                                <div style="display: flex; gap: 10px; flex-wrap: wrap; margin-top: 8px;">
+                                    <button class="btn btn-success" id="saveSentences">Save</button>
+                                    <button class="btn btn-secondary" id="btnUploadTask2InEdit" type="button">
+                                        <i class="fas fa-file-upload"></i> Upload File
+                                    </button>
+                                    <button class="btn btn-secondary" id="cancelSentenceEdit" type="button">Cancel</button>
+                                </div>
                             </div>
 
                             <div id="sentenceDisplay" class="sentence-display">
@@ -2913,9 +3001,12 @@
                                 Score: <span id="rhymeScoreDisplay">0</span> / <span id="totalRhymes">10</span>
                             </div>
 
-                            <div class="controls">
+                            <div class="controls" style="display: flex; gap: 10px; flex-wrap: wrap; align-items: center;">
                                 <button class="btn btn-secondary" id="addRhymePair">
                                     <span>➕</span> Add Item
+                                </button>
+                                <button class="btn btn-upload-passage" id="btnUploadTask3" type="button" title="Upload PDF, Word DOC, or Picture">
+                                    <i class="fas fa-file-upload"></i> Upload Items (PDF/DOC/Pic)
                                 </button>
                                 <button class="btn btn-secondary" id="playRhymes">
                                     <span>🔊</span> Play Items
@@ -2940,7 +3031,7 @@
                         </h2>
 
                         <div class="assessment-item">
-                            <div class="passage-controls">
+                            <div class="passage-controls" style="display: flex; gap: 8px; flex-wrap: wrap; align-items: center;">
                                 <select id="storyPassageSelect" class="passage-select"></select>
                                 <div class="slider-control" style="display:flex; align-items:center; gap:5px;">
                                     <label>Size:</label>
@@ -2948,6 +3039,10 @@
                                 </div>
                                 <button class="btn btn-secondary" id="addStoryBtn"
                                     style="padding: 8px 15px; font-size: 0.9rem;">Add New</button>
+                                <button class="btn btn-upload-passage" id="btnUploadTask4" type="button"
+                                    style="padding: 8px 15px; font-size: 0.9rem;" title="Upload PDF, Word DOC, or Picture">
+                                    <i class="fas fa-file-upload"></i> Upload Passage (PDF/DOC/Pic)
+                                </button>
                                 <button class="btn btn-danger" id="deleteStoryBtn"
                                     style="padding: 8px 15px; font-size: 0.9rem;">Delete</button>
                             </div>
@@ -2960,6 +3055,14 @@
 
                             <!-- Edit Area for Story & Questions -->
                             <div id="storyEditArea" class="edit-area-container">
+                                <div style="margin-bottom: 14px; padding: 12px 16px; background: #eff6ff; border: 1.5px dashed #3b82f6; border-radius: 8px; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 10px;">
+                                    <div style="font-size: 0.88rem; color: #1e40af; font-weight: 600;">
+                                        <i class="fas fa-file-upload"></i> Auto-fill story & questions from a document or photo:
+                                    </div>
+                                    <button type="button" class="btn btn-upload-passage" id="btnUploadTask4InEdit" style="font-size: 0.85rem; padding: 6px 14px;">
+                                        <i class="fas fa-file-upload"></i> Upload PDF / DOC / Picture
+                                    </button>
+                                </div>
                                 <div class="form-group">
                                     <label class="form-label">Story Title</label>
                                     <input type="text" id="editStoryTitle" class="form-input">
@@ -3187,25 +3290,24 @@
                             <!-- Class Reports Settings -->
                             <div
                                 style="background: #f8f9fa; padding: 15px; border-radius: 8px; margin-bottom: 20px; border: 1px solid #dee2e6;">
-                                <h4 style="margin-bottom: 10px; color: var(--secondary);">Class Reports Settings</h4>
-                                <div style="display: flex; align-items: center; gap: 10px;">
-                                    <label for="classAssessmentPeriod" style="font-weight: 600;">Select Assessment
-                                        Period:</label>
-                                    <select id="classAssessmentPeriod" class="form-input" style="max-width: 250px;">
-                                        <option value="latest">Latest Available (Default)</option>
+                                <h4 style="margin-bottom: 10px; color: var(--secondary);"><i class="fas fa-sliders-h"></i> Class Reports Settings</h4>
+                                <div style="display: flex; align-items: center; gap: 12px; flex-wrap: wrap;">
+                                    <label for="classAssessmentPeriod" style="font-weight: 600;">Select Assessment Period:</label>
+                                    <select id="classAssessmentPeriod" class="form-input" style="min-width: 280px; max-width: 380px; font-weight: 600;">
+                                        <option value="latest">Latest Assessment</option>
                                     </select>
 
                                     <label for="classSubjectFilter"
-                                        style="font-weight: 600; margin-left: 10px;">Subject:</label>
-                                    <select id="classSubjectFilter" class="form-input" style="max-width: 150px;">
+                                        style="font-weight: 600; margin-left: 5px;">Subject:</label>
+                                    <select id="classSubjectFilter" class="form-input" style="max-width: 160px; font-weight: 600;">
                                         <option value="all">All Subjects</option>
                                         <option value="filipino">Filipino</option>
                                         <option value="bisaya">Bisaya</option>
                                         <option value="english">English</option>
                                     </select>
                                 </div>
-                                <p style="font-size: 0.85rem; color: #666; margin-top: 5px;">
-                                    Applies to: Reading Scoresheet, Class Record, and Class Summary.
+                                <p style="font-size: 0.85rem; color: #64748b; margin-top: 8px; margin-bottom: 0;">
+                                    <i class="fas fa-info-circle" style="color: #3498db;"></i> Applies to: Reading Scoresheet, Class Record, and Class Summary.
                                 </p>
                             </div>
 
@@ -3340,14 +3442,13 @@
                     <div class="card task-content" id="taskreadingdrill" style="padding: 0; background: transparent; box-shadow: none; border: none;">
                         <!-- Content rendered dynamically by window.ReadingDrill.render() -->
                     </div>
+
+                    <footer class="app-main-footer">
+                        <p>ReadLens - Focused Literacy. Clear Results | Developed by GLENN MARK S. PRESORES and ROSAVELIA O. JIMENEZ</p>
+                    </footer>
                 </div>
             </div>
         </div>
-
-        <footer>
-            <p>ReadLens - Focused Literacy. Clear Results | Developed by GLENN MARK S. PRESORES and
-                ROSAVELIA O. JIMENEZ </p>
-        </footer>
     </div>
 
     <!-- School Details Modal -->
@@ -3543,6 +3644,128 @@
                 <button type="button" class="btn btn-secondary" id="btnCancelSF1Import">Cancel</button>
                 <button type="button" class="btn btn-success" id="btnConfirmSF1Import" style="background: #27ae60; border-color: #27ae60; font-weight: 600;">
                     <i class="fas fa-check"></i> Import Selected (<span id="sf1BtnCount">0</span>)
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Passage Upload Modal (Task 1 - 4: PDF, DOC, Picture) -->
+    <div class="modal-overlay" id="passageUploadModal" style="z-index: 1100;">
+        <div class="modal-content" style="max-width: 820px; max-height: 92vh; display: flex; flex-direction: column;">
+            <div class="modal-header" style="background: linear-gradient(135deg, #1e3a8a 0%, #2563eb 100%); display: flex; justify-content: space-between; align-items: center; padding: 16px 22px;">
+                <div style="display: flex; align-items: center; gap: 10px;">
+                    <span style="font-size: 1.4rem;">📄</span>
+                    <div>
+                        <h3 class="modal-title" style="color: white; font-size: 1.25rem; font-weight: 700; margin: 0;">Upload Reading Passage / Sentences</h3>
+                        <div style="font-size: 0.8rem; color: #bfdbfe; margin-top: 2px;">Upload PDF, Word document (.docx/.doc), or Picture of passage for Task 1 - 4</div>
+                    </div>
+                </div>
+                <button type="button" id="btnClosePassageModal" style="background: none; border: none; color: white; font-size: 1.8rem; cursor: pointer; line-height: 1; padding: 0 5px;">&times;</button>
+            </div>
+
+            <div class="modal-body" style="overflow-y: auto; flex: 1; padding: 20px; display: flex; flex-direction: column; gap: 16px;">
+                <!-- Target Task Selector -->
+                <div style="background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px; padding: 12px 16px;">
+                    <label style="font-weight: 700; font-size: 0.9rem; color: #1e293b; margin-bottom: 6px; display: block;">
+                        <i class="fas fa-bullseye" style="color: #2563eb;"></i> Select Target Task to Update:
+                    </label>
+                    <select id="modalTargetTask" class="form-input" style="font-weight: 600; width: 100%; border-radius: 6px;">
+                        <option value="4">Task 4: Story Reading (Passage)</option>
+                        <option value="2">Task 2: Sentence Reading</option>
+                        <option value="1">Task 1: Letter / Word / Sentence Items</option>
+                        <option value="3">Task 3: Rhyming / Word Identification</option>
+                    </select>
+                </div>
+
+                <!-- Dropzone for File Upload -->
+                <div id="modalDropzone" style="border: 2px dashed #93c5fd; background: #eff6ff; border-radius: 10px; padding: 22px 20px; text-align: center; cursor: pointer; transition: all 0.2s ease;">
+                    <input type="file" id="modalFileInput" accept=".pdf,.doc,.docx,.png,.jpg,.jpeg,.webp,.bmp,.txt" style="display: none;">
+                    <div style="display: flex; justify-content: center; gap: 16px; font-size: 2.2rem; margin-bottom: 8px;">
+                        <span title="PDF Document">📄</span>
+                        <span title="Word Document">📝</span>
+                        <span title="Picture / Photo">🖼️</span>
+                    </div>
+                    <div style="font-weight: 700; font-size: 1.05rem; color: #1e40af; margin-bottom: 4px;">
+                        Click to Browse or Drag & Drop File Here
+                    </div>
+                    <div style="font-size: 0.85rem; color: #64748b;">
+                        Supports: <strong>PDF</strong> (.pdf), <strong>Word</strong> (.docx, .doc), <strong>Pictures / Photos</strong> (.png, .jpg, .webp), and Text (.txt)
+                    </div>
+                    <div id="modalSelectedFileBadge" style="display: none; margin-top: 10px; align-items: center; gap: 8px; background: white; padding: 6px 14px; border-radius: 20px; font-size: 0.85rem; font-weight: 600; color: #2563eb; box-shadow: 0 1px 3px rgba(0,0,0,0.1); width: fit-content; margin-left: auto; margin-right: auto;">
+                        <i class="fas fa-file-alt"></i> <span id="modalFileName">file.pdf</span>
+                    </div>
+                </div>
+
+                <!-- Extraction Loading Bar & Status -->
+                <div id="modalExtractStatus" style="display: none; padding: 12px 16px; background: #fef3c7; border: 1px solid #fde047; border-radius: 8px; align-items: center; gap: 12px;">
+                    <i class="fas fa-spinner fa-spin" style="font-size: 1.3rem; color: #d97706;"></i>
+                    <div style="flex: 1;">
+                        <div id="modalExtractStatusText" style="font-weight: 600; font-size: 0.9rem; color: #92400e;">Extracting text from file...</div>
+                        <div id="modalProgressBarWrap" style="height: 6px; background: #fde68a; border-radius: 3px; margin-top: 6px; overflow: hidden; display: none;">
+                            <div id="modalProgressBar" style="height: 100%; width: 0%; background: #d97706; transition: width 0.2s;"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Image Preview (if image uploaded) -->
+                <div id="modalImagePreviewContainer" style="display: none; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px; padding: 10px; max-height: 200px; text-align: center; overflow: hidden;">
+                    <div style="font-size: 0.8rem; font-weight: 600; color: #64748b; margin-bottom: 6px;">Image Preview (Source Document / Photo):</div>
+                    <img id="modalImagePreview" src="" alt="Uploaded passage" style="max-height: 160px; max-width: 100%; object-fit: contain; border-radius: 4px; border: 1px solid #cbd5e1;">
+                </div>
+
+                <!-- Fields for Task 4: Story Title & Mode -->
+                <div id="modalTask4Controls" style="display: flex; flex-direction: column; gap: 10px;">
+                    <div>
+                        <label style="font-weight: 700; font-size: 0.88rem; color: #1e293b; margin-bottom: 4px; display: block;">
+                            Story Title:
+                        </label>
+                        <input type="text" id="modalStoryTitle" class="form-input" placeholder="e.g. Ang Pagbisita ni Lola Neneng" style="width: 100%;">
+                    </div>
+                    <div style="display: flex; gap: 20px; align-items: center; font-size: 0.88rem; font-weight: 600; color: #334155;">
+                        <span>Action:</span>
+                        <label style="display: inline-flex; align-items: center; gap: 6px; cursor: pointer;">
+                            <input type="radio" name="modalStoryMode" value="new" checked> Add as New Story
+                        </label>
+                        <label style="display: inline-flex; align-items: center; gap: 6px; cursor: pointer;">
+                            <input type="radio" name="modalStoryMode" value="replace"> Replace Currently Selected Story
+                        </label>
+                    </div>
+                </div>
+
+                <!-- Extracted Content Preview & Editor -->
+                <div>
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
+                        <label style="font-weight: 700; font-size: 0.9rem; color: #1e293b; margin: 0;">
+                            Extracted Passage / Content (Editable):
+                        </label>
+                        <span id="modalWordCountBadge" style="font-size: 0.8rem; background: #e0e7ff; color: #3730a3; padding: 2px 8px; border-radius: 12px; font-weight: 600;">
+                            0 words
+                        </span>
+                    </div>
+                    <textarea id="modalExtractedText" class="form-input" rows="8" placeholder="Extracted text will appear here. You can edit, format, or adjust lines before applying..." style="width: 100%; font-family: inherit; font-size: 0.95rem; line-height: 1.5; resize: vertical;"></textarea>
+                    <div id="modalTaskHint" style="font-size: 0.8rem; color: #64748b; margin-top: 4px;">
+                        Hint for Task 4: Content above will be formatted as reading passage with clickable words for miscue tracking and timer.
+                    </div>
+                </div>
+
+                <!-- Questions Container (for Task 4) -->
+                <div id="modalQuestionsSection" style="display: none; background: #fdf2f8; border: 1px solid #fbcfe8; border-radius: 8px; padding: 12px 14px;">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+                        <span style="font-weight: 700; font-size: 0.88rem; color: #9d174d;">
+                            <i class="fas fa-question-circle"></i> Comprehension Questions:
+                        </span>
+                        <button type="button" id="btnAddModalQuestion" class="btn btn-secondary" style="font-size: 0.78rem; padding: 3px 8px;">+ Add Question</button>
+                    </div>
+                    <div id="modalQuestionsList" style="display: flex; flex-direction: column; gap: 8px;">
+                        <!-- Question items -->
+                    </div>
+                </div>
+            </div>
+
+            <div class="modal-footer" style="padding: 14px 22px; background: #f8fafc; border-top: 1px solid #e2e8f0; display: flex; justify-content: space-between; align-items: center;">
+                <button type="button" class="btn btn-secondary" id="btnCancelPassageModal">Cancel</button>
+                <button type="button" class="btn btn-primary" id="btnApplyPassageModal" style="background: #2563eb; border-color: #2563eb; font-weight: 700; padding: 8px 20px;">
+                    <i class="fas fa-check"></i> Apply to Task <span id="modalBtnTaskNum">4</span>
                 </button>
             </div>
         </div>
@@ -3919,7 +4142,7 @@
                 const grade = document.getElementById('regGrade').value.trim();
                 const password = document.getElementById('regPassword').value.trim();
                 const secretCode = document.getElementById('regSecretCode').value.trim();
-                const validCode = "READLENS-FORMANUTO";
+                const validCode = "SJIS500680";
 
                 if (name && school && grade && password) {
                     if (secretCode !== validCode) {
@@ -3999,6 +4222,14 @@
             }
 
             function initSidePanelCollapse() {
+                // Ensure the side panel never scrolls
+                const sidePanel = document.getElementById('tasksSidePanel');
+                if (sidePanel) {
+                    sidePanel.addEventListener('wheel', (e) => {
+                        e.preventDefault();
+                    }, { passive: false });
+                }
+
                 const toggleBtn = document.getElementById('btnToggleSidePanel');
                 if (toggleBtn) {
                     toggleBtn.addEventListener('click', (e) => {
@@ -4109,8 +4340,10 @@
                 safeInit(initializeSentenceReading);
                 safeInit(initializeRhymeAssessment);
                 safeInit(initializeStoryAssessment);
+                safeInit(initPassageUploader);
                 safeInit(renderAllLearnersTable);
                 safeInit(updateDashboardDropdown);
+                safeInit(updateClassAssessmentDropdown);
                 safeInit(async () => {
                     if (window.ReadingDrill) {
                         await window.ReadingDrill.init();
@@ -4139,29 +4372,139 @@
             }
 
             // ==========================================
-            // DASHBOARD LOGIC
+            // DASHBOARD & CLASS REPORTS PERIOD LOGIC
             // ==========================================
-            function updateDashboardDropdown() {
-                const sel = document.getElementById('dashboardAssessmentPeriod');
-                if (!sel) return;
-                let max = 0;
-                if (learners) learners.forEach(l => { if (l.assessments && l.assessments.length > max) max = l.assessments.length; });
+            function getAssessmentPeriodOptions() {
+                const types = typeof getAssessmentTypes === 'function' ? getAssessmentTypes() : [...DEFAULT_DEPED_3_TERMS];
+                const counts = {}; // lowerLabel -> { count, originalLabel }
 
-                const current = sel.value;
-                let html = '<option value="latest">Latest Assessment</option>';
-                for (let i = 0; i < max; i++) {
-                    html += `<option value="${i}">Assessment ${i + 1}</option>`;
+                if (Array.isArray(learners)) {
+                    learners.forEach(l => {
+                        if (Array.isArray(l.assessments)) {
+                            const seenOnLearner = new Set();
+                            l.assessments.forEach(a => {
+                                const lbl = (a.assessmentLabel || '').trim();
+                                if (lbl) {
+                                    const lower = lbl.toLowerCase();
+                                    seenOnLearner.add(lower);
+                                    if (!counts[lower]) {
+                                        counts[lower] = { count: 0, originalLabel: lbl };
+                                    }
+                                }
+                            });
+                            seenOnLearner.forEach(lower => {
+                                counts[lower].count += 1;
+                            });
+                        }
+                    });
+                }
+                return { types, counts };
+            }
+
+            function populatePeriodDropdown(sel) {
+                if (!sel) return;
+                const currentVal = sel.value || 'latest';
+                const { types, counts } = getAssessmentPeriodOptions();
+
+                let totalAssessed = 0;
+                if (Array.isArray(learners)) {
+                    totalAssessed = learners.filter(l => l.assessments && l.assessments.length > 0).length;
                 }
 
-                // Only update if innerHTML is different to prevent reset issues, though for simple selects replacing is usually fine
-                if (sel.innerHTML !== html) {
-                    sel.innerHTML = html;
-                    if (current && (current === 'latest' || parseInt(current) < max)) {
-                        sel.value = current;
-                    } else {
-                        sel.value = 'latest';
+                let html = '';
+                const latestText = totalAssessed > 0 ? `Latest Assessment (${totalAssessed} assessed)` : 'Latest Assessment';
+                html += `<option value="latest">${latestText}</option>`;
+
+                // Group 1: DepEd 3-Term (Pre & Post) / Configured Assessment Types
+                html += `<optgroup label="DepEd Terms / Assessment Periods">`;
+                types.forEach(t => {
+                    const lower = t.toLowerCase();
+                    const cnt = counts[lower] ? counts[lower].count : 0;
+                    const badge = cnt > 0 ? ` (${cnt} assessed)` : '';
+                    html += `<option value="${t}">${t}${badge}</option>`;
+                });
+                html += `</optgroup>`;
+
+                // Group 2: Other recorded labels found in learners' records (if any)
+                const extraLabels = [];
+                Object.keys(counts).forEach(k => {
+                    if (!types.some(t => t.toLowerCase() === k)) {
+                        extraLabels.push(counts[k]);
+                    }
+                });
+
+                if (extraLabels.length > 0) {
+                    html += `<optgroup label="Other Recorded Assessments">`;
+                    extraLabels.forEach(item => {
+                        const badge = item.count > 0 ? ` (${item.count} assessed)` : '';
+                        html += `<option value="${item.originalLabel}">${item.originalLabel}${badge}</option>`;
+                    });
+                    html += `</optgroup>`;
+                }
+
+                sel.innerHTML = html;
+
+                // Restore selected value if valid option exists
+                let exists = false;
+                for (let i = 0; i < sel.options.length; i++) {
+                    if (sel.options[i].value === currentVal) {
+                        exists = true;
+                        break;
                     }
                 }
+                if (exists) {
+                    sel.value = currentVal;
+                } else {
+                    sel.value = 'latest';
+                }
+            }
+
+            function updateDashboardDropdown() {
+                const sel = document.getElementById('dashboardAssessmentPeriod');
+                if (sel) populatePeriodDropdown(sel);
+            }
+
+            function updateClassAssessmentDropdown() {
+                const sel = document.getElementById('classAssessmentPeriod');
+                if (sel) populatePeriodDropdown(sel);
+            }
+
+            function getLearnerAssessmentForPeriod(learner, periodVal, subjectFilter = 'all') {
+                if (!learner || !Array.isArray(learner.assessments) || learner.assessments.length === 0) {
+                    return null;
+                }
+
+                const isLatest = !periodVal || periodVal === 'latest';
+                if (isLatest) {
+                    if (subjectFilter === 'all') {
+                        return learner.assessments[learner.assessments.length - 1];
+                    } else {
+                        return [...learner.assessments].reverse().find(a => a.subject === subjectFilter) || null;
+                    }
+                }
+
+                // Match by assessmentLabel (case-insensitive)
+                const cleanPeriod = String(periodVal).trim().toLowerCase();
+                const matches = learner.assessments.filter(a => {
+                    const matchesTerm = (a.assessmentLabel || '').trim().toLowerCase() === cleanPeriod;
+                    const matchesSub = (subjectFilter === 'all') || (a.subject === subjectFilter);
+                    return matchesTerm && matchesSub;
+                });
+
+                if (matches.length > 0) {
+                    return matches[matches.length - 1];
+                }
+
+                // Fallback: check if periodVal is a numeric index
+                const numIdx = parseInt(periodVal, 10);
+                if (!isNaN(numIdx) && learner.assessments[numIdx]) {
+                    const a = learner.assessments[numIdx];
+                    if (subjectFilter === 'all' || a.subject === subjectFilter) {
+                        return a;
+                    }
+                }
+
+                return null;
             }
 
             // REDESIGNED: Vertical Chart Rendering
@@ -4212,8 +4555,6 @@
                 // GET SELECTED SOURCE
                 const dashSel = document.getElementById('dashboardAssessmentPeriod');
                 const dashVal = dashSel ? dashSel.value : 'latest';
-                const isLatest = dashVal === 'latest';
-                const targetIdx = isLatest ? -1 : parseInt(dashVal);
 
                 learners.forEach(l => {
                     const isMale = (l.gender || '').toLowerCase() === 'male';
@@ -4221,14 +4562,7 @@
                     target.enrolled++;
 
                     // Use selected assessment
-                    let last = null;
-                    if (l.assessments && l.assessments.length > 0) {
-                        if (isLatest) {
-                            last = l.assessments[l.assessments.length - 1];
-                        } else if (l.assessments[targetIdx]) {
-                            last = l.assessments[targetIdx];
-                        }
-                    }
+                    const last = getLearnerAssessmentForPeriod(l, dashVal, 'all');
 
                     if (last) {
                         target.assessed++;
@@ -4473,6 +4807,8 @@
                 }
                 appStorage.setItem('readLens_assessmentTypes', JSON.stringify(types));
                 renderAssessmentTypeDropdown();
+                updateDashboardDropdown();
+                updateClassAssessmentDropdown();
             }
 
             function renderAssessmentTypeDropdown(selectedVal = null) {
@@ -6624,6 +6960,645 @@
             }
 
             // ==========================================
+            // UNIVERSAL PASSAGE / DOCUMENT UPLOADER (TASK 1 - 4)
+            // Supports: PDF (.pdf), Word (.docx, .doc), Pictures/Photos (.png, .jpg, .webp), Text (.txt)
+            // ==========================================
+
+            function initPassageUploader() {
+                // Task 1 buttons
+                const btnUploadTask1 = document.getElementById('btnUploadTask1');
+                if (btnUploadTask1) btnUploadTask1.addEventListener('click', () => openPassageModal('1'));
+                const btnUploadTask1InEdit = document.getElementById('btnUploadTask1InEdit');
+                if (btnUploadTask1InEdit) btnUploadTask1InEdit.addEventListener('click', () => openPassageModal('1'));
+
+                // Task 2 buttons
+                const btnUploadTask2 = document.getElementById('btnUploadTask2');
+                if (btnUploadTask2) btnUploadTask2.addEventListener('click', () => openPassageModal('2'));
+                const btnUploadTask2InEdit = document.getElementById('btnUploadTask2InEdit');
+                if (btnUploadTask2InEdit) btnUploadTask2InEdit.addEventListener('click', () => openPassageModal('2'));
+                const cancelSentenceEdit = document.getElementById('cancelSentenceEdit');
+                if (cancelSentenceEdit) {
+                    cancelSentenceEdit.addEventListener('click', () => {
+                        const area = document.getElementById('sentenceEditArea');
+                        if (area) area.style.display = 'none';
+                    });
+                }
+
+                // Task 3 button
+                const btnUploadTask3 = document.getElementById('btnUploadTask3');
+                if (btnUploadTask3) btnUploadTask3.addEventListener('click', () => openPassageModal('3'));
+
+                // Task 4 buttons
+                const btnUploadTask4 = document.getElementById('btnUploadTask4');
+                if (btnUploadTask4) btnUploadTask4.addEventListener('click', () => openPassageModal('4'));
+                const btnUploadTask4InEdit = document.getElementById('btnUploadTask4InEdit');
+                if (btnUploadTask4InEdit) btnUploadTask4InEdit.addEventListener('click', () => openPassageModal('4'));
+
+                // Modal close & cancel
+                const btnClose = document.getElementById('btnClosePassageModal');
+                if (btnClose) btnClose.addEventListener('click', closePassageModal);
+                const btnCancel = document.getElementById('btnCancelPassageModal');
+                if (btnCancel) btnCancel.addEventListener('click', closePassageModal);
+
+                // Modal target task change
+                const targetTaskSel = document.getElementById('modalTargetTask');
+                if (targetTaskSel) targetTaskSel.addEventListener('change', updateModalTargetTaskView);
+
+                // Dropzone & File input
+                const dropzone = document.getElementById('modalDropzone');
+                const fileInput = document.getElementById('modalFileInput');
+
+                if (dropzone && fileInput) {
+                    dropzone.addEventListener('click', () => fileInput.click());
+                    dropzone.addEventListener('dragover', (e) => {
+                        e.preventDefault();
+                        dropzone.style.background = '#dbeafe';
+                        dropzone.style.borderColor = '#2563eb';
+                    });
+                    dropzone.addEventListener('dragleave', () => {
+                        dropzone.style.background = '#eff6ff';
+                        dropzone.style.borderColor = '#93c5fd';
+                    });
+                    dropzone.addEventListener('drop', (e) => {
+                        e.preventDefault();
+                        dropzone.style.background = '#eff6ff';
+                        dropzone.style.borderColor = '#93c5fd';
+                        if (e.dataTransfer && e.dataTransfer.files.length > 0) {
+                            handlePassageFile(e.dataTransfer.files[0]);
+                        }
+                    });
+                    fileInput.addEventListener('change', (e) => {
+                        if (e.target.files && e.target.files.length > 0) {
+                            handlePassageFile(e.target.files[0]);
+                        }
+                    });
+                }
+
+                // Extracted Textarea input listener
+                const textArea = document.getElementById('modalExtractedText');
+                if (textArea) textArea.addEventListener('input', updateModalWordCount);
+
+                // Add Question button in modal
+                const btnAddQ = document.getElementById('btnAddModalQuestion');
+                if (btnAddQ) btnAddQ.addEventListener('click', () => addModalQuestionRow());
+
+                // Apply button
+                const btnApply = document.getElementById('btnApplyPassageModal');
+                if (btnApply) btnApply.addEventListener('click', applyPassageModal);
+            }
+
+            function openPassageModal(targetTask = '4') {
+                const modal = document.getElementById('passageUploadModal');
+                if (!modal) return;
+
+                const targetTaskSel = document.getElementById('modalTargetTask');
+                if (targetTaskSel) targetTaskSel.value = String(targetTask);
+
+                // Reset file badges & status
+                const fileBadge = document.getElementById('modalSelectedFileBadge');
+                if (fileBadge) fileBadge.style.display = 'none';
+                const fileInput = document.getElementById('modalFileInput');
+                if (fileInput) fileInput.value = '';
+
+                const statusEl = document.getElementById('modalExtractStatus');
+                if (statusEl) statusEl.style.display = 'none';
+                const imgWrap = document.getElementById('modalImagePreviewContainer');
+                if (imgWrap) imgWrap.style.display = 'none';
+                const imgEl = document.getElementById('modalImagePreview');
+                if (imgEl) imgEl.src = '';
+
+                // Clear or pre-populate fields
+                const titleInput = document.getElementById('modalStoryTitle');
+                const textInput = document.getElementById('modalExtractedText');
+                const qList = document.getElementById('modalQuestionsList');
+                if (qList) qList.innerHTML = '';
+
+                if (targetTask === '4') {
+                    const currentStory = storyPassages[currentStoryIdx];
+                    if (titleInput) titleInput.value = currentStory ? currentStory.title : '';
+                    if (textInput) textInput.value = currentStory ? currentStory.content : '';
+                    if (currentStory && currentStory.questions) {
+                        renderModalQuestions(currentStory.questions);
+                    }
+                } else if (targetTask === '2') {
+                    if (titleInput) titleInput.value = '';
+                    if (textInput) textInput.value = sentences.join('\n');
+                } else if (targetTask === '1') {
+                    if (titleInput) titleInput.value = '';
+                    if (textInput) textInput.value = letters.join('\n');
+                } else if (targetTask === '3') {
+                    if (titleInput) titleInput.value = '';
+                    if (textInput) textInput.value = rhymePairs.map(p => p.pair).join('\n');
+                }
+
+                updateModalWordCount();
+                updateModalTargetTaskView();
+                modal.classList.add('active');
+            }
+
+            function closePassageModal() {
+                const modal = document.getElementById('passageUploadModal');
+                if (modal) modal.classList.remove('active');
+            }
+
+            function updateModalTargetTaskView() {
+                const targetTaskSel = document.getElementById('modalTargetTask');
+                const taskVal = targetTaskSel ? targetTaskSel.value : '4';
+
+                const task4Controls = document.getElementById('modalTask4Controls');
+                const qSection = document.getElementById('modalQuestionsSection');
+                const btnNum = document.getElementById('modalBtnTaskNum');
+                const hint = document.getElementById('modalTaskHint');
+
+                if (taskVal === '4') {
+                    if (task4Controls) task4Controls.style.display = 'flex';
+                    if (qSection) qSection.style.display = 'block';
+                    if (btnNum) btnNum.textContent = '4 (Story Reading)';
+                    if (hint) hint.textContent = 'Hint: The passage above will be formatted with interactive clickable words for miscue tracking, word count, and reading fluency timer.';
+                } else if (taskVal === '2') {
+                    if (task4Controls) task4Controls.style.display = 'none';
+                    if (qSection) qSection.style.display = 'none';
+                    if (btnNum) btnNum.textContent = '2 (Sentences)';
+                    if (hint) hint.textContent = 'Hint: Sentences will be split per line. Learners read each sentence and words can be clicked to track miscues.';
+                } else if (taskVal === '1') {
+                    if (task4Controls) task4Controls.style.display = 'none';
+                    if (qSection) qSection.style.display = 'none';
+                    const learner = learners.find(x => x.id === currentLearnerId);
+                    const isSentence = learner && learner.grade > 1;
+                    if (btnNum) btnNum.textContent = '1 (Letter / Word Naming)';
+                    if (hint) hint.textContent = isSentence
+                        ? 'Hint for Grade ' + learner.grade + ': Content will be split into sentences with interactive word miscue tracking.'
+                        : 'Hint for Grade 1: Items will be formatted as individual letter/word assessment cards.';
+                } else if (taskVal === '3') {
+                    if (task4Controls) task4Controls.style.display = 'none';
+                    if (qSection) qSection.style.display = 'none';
+                    if (btnNum) btnNum.textContent = '3 (Rhyming / Word ID)';
+                    if (hint) hint.textContent = 'Hint: Each line will be added as an assessment item (word card or rhyming pair).';
+                }
+            }
+
+            function updateModalWordCount() {
+                const textInput = document.getElementById('modalExtractedText');
+                const badge = document.getElementById('modalWordCountBadge');
+                if (!textInput || !badge) return;
+                const text = textInput.value.trim();
+                const words = text ? text.split(/\s+/).filter(Boolean).length : 0;
+                badge.textContent = `${words} word${words === 1 ? '' : 's'}`;
+            }
+
+            async function handlePassageFile(file) {
+                if (!file) return;
+
+                // Show selected file badge
+                const fileBadge = document.getElementById('modalSelectedFileBadge');
+                const fileName = document.getElementById('modalFileName');
+                if (fileBadge && fileName) {
+                    fileName.textContent = file.name;
+                    fileBadge.style.display = 'inline-flex';
+                }
+
+                // Show loading status
+                const statusEl = document.getElementById('modalExtractStatus');
+                const statusText = document.getElementById('modalExtractStatusText');
+                const barWrap = document.getElementById('modalProgressBarWrap');
+                const bar = document.getElementById('modalProgressBar');
+
+                if (statusEl) statusEl.style.display = 'flex';
+                if (statusText) statusText.textContent = `Processing ${file.name}...`;
+                if (barWrap) barWrap.style.display = 'none';
+                if (bar) bar.style.width = '0%';
+
+                // Preview picture if image
+                const isImage = file.type.startsWith('image/') || /\.(png|jpe?g|webp|bmp|gif)$/i.test(file.name);
+                const imgWrap = document.getElementById('modalImagePreviewContainer');
+                const imgEl = document.getElementById('modalImagePreview');
+
+                if (isImage) {
+                    const reader = new FileReader();
+                    reader.onload = (e) => {
+                        if (imgEl) imgEl.src = e.target.result;
+                        if (imgWrap) imgWrap.style.display = 'block';
+                    };
+                    reader.readAsDataURL(file);
+                } else {
+                    if (imgWrap) imgWrap.style.display = 'none';
+                }
+
+                try {
+                    const extracted = await extractTextFromFile(file, (msg, pct) => {
+                        if (statusText) statusText.textContent = msg;
+                        if (pct !== undefined && bar && barWrap) {
+                            barWrap.style.display = 'block';
+                            bar.style.width = Math.min(Math.max(pct, 0), 100) + '%';
+                        }
+                    });
+
+                    if (!extracted || !extracted.trim()) {
+                        if (statusText) {
+                            statusText.innerHTML = '<span style="color: #b91c1c;">No readable text found. You can type or paste the passage directly in the text box below.</span>';
+                        }
+                        return;
+                    }
+
+                    const targetTask = document.getElementById('modalTargetTask').value;
+                    const cleanName = file.name.replace(/\.[^/.]+$/, '').replace(/[_-]/g, ' ');
+
+                    if (targetTask === '4') {
+                        const parsed = parsePassageAndQuestions(extracted);
+                        const titleInput = document.getElementById('modalStoryTitle');
+                        const textInput = document.getElementById('modalExtractedText');
+
+                        if (titleInput) titleInput.value = parsed.title || cleanName;
+                        if (textInput) textInput.value = parsed.content || extracted.trim();
+
+                        if (parsed.questions && parsed.questions.length > 0) {
+                            renderModalQuestions(parsed.questions);
+                        }
+                    } else {
+                        const textInput = document.getElementById('modalExtractedText');
+                        if (textInput) textInput.value = extracted.trim();
+                    }
+
+                    updateModalWordCount();
+                    if (statusEl) statusEl.style.display = 'none';
+                } catch (err) {
+                    console.error("Passage extraction error:", err);
+                    if (statusText) {
+                        statusText.innerHTML = `<span style="color: #b91c1c;"><i class="fas fa-exclamation-triangle"></i> ${err.message || 'Error reading file.'} You can type or paste text manually below.</span>`;
+                    }
+                }
+            }
+
+            async function extractTextFromFile(file, onProgress) {
+                const name = (file.name || '').toLowerCase();
+
+                // 1. Plain text file
+                if (name.endsWith('.txt')) {
+                    if (onProgress) onProgress('Reading text file...', 100);
+                    return await file.text();
+                }
+
+                // 2. PDF Document
+                if (name.endsWith('.pdf')) {
+                    if (onProgress) onProgress('Extracting text from PDF pages...', 30);
+                    return await extractTextFromPDF(file, onProgress);
+                }
+
+                // 3. Word Document (.docx, .doc)
+                if (name.endsWith('.docx') || name.endsWith('.doc')) {
+                    if (onProgress) onProgress('Extracting Word document text...', 50);
+                    return await extractTextFromDoc(file);
+                }
+
+                // 4. Picture / Image (PNG, JPG, JPEG, WEBP, BMP)
+                if (file.type.startsWith('image/') || /\.(png|jpe?g|webp|bmp|gif)$/i.test(name)) {
+                    if (onProgress) onProgress('Scanning image with OCR...', 10);
+                    return await extractTextFromImage(file, onProgress);
+                }
+
+                // Fallback: Attempt plain text read
+                try {
+                    return await file.text();
+                } catch (e) {
+                    throw new Error("Unsupported format. Please upload a PDF, Word DOCX/DOC, Picture, or TXT file.");
+                }
+            }
+
+            async function extractTextFromPDF(file, onProgress) {
+                const arrayBuffer = await file.arrayBuffer();
+                if (!window.pdfjsLib) throw new Error("PDF processing library is not loaded.");
+                if (!pdfjsLib.GlobalWorkerOptions.workerSrc) {
+                    pdfjsLib.GlobalWorkerOptions.workerSrc = './pdf.worker.min.js';
+                }
+                const loadingTask = pdfjsLib.getDocument({ data: new Uint8Array(arrayBuffer) });
+                const pdfDoc = await loadingTask.promise;
+                let fullText = "";
+
+                for (let pageNum = 1; pageNum <= pdfDoc.numPages; pageNum++) {
+                    if (onProgress) {
+                        const pct = Math.round((pageNum / pdfDoc.numPages) * 100);
+                        onProgress(`Reading PDF page ${pageNum} of ${pdfDoc.numPages}...`, pct);
+                    }
+                    const page = await pdfDoc.getPage(pageNum);
+                    const textContent = await page.getTextContent();
+                    let lastY, pageStr = "";
+
+                    for (let item of textContent.items) {
+                        if (lastY !== undefined && Math.abs(item.transform[5] - lastY) > 5) {
+                            pageStr += "\n";
+                        } else if (pageStr.length > 0 && !pageStr.endsWith(" ") && !pageStr.endsWith("\n")) {
+                            pageStr += " ";
+                        }
+                        pageStr += item.str;
+                        lastY = item.transform[5];
+                    }
+                    if (pageStr.trim()) {
+                        fullText += (fullText ? "\n\n" : "") + pageStr.trim();
+                    }
+                }
+                return fullText.trim();
+            }
+
+            async function extractTextFromDoc(file) {
+                const arrayBuffer = await file.arrayBuffer();
+
+                // Attempt DOCX extraction via JSZip
+                if (typeof JSZip !== 'undefined') {
+                    try {
+                        const zip = await JSZip.loadAsync(arrayBuffer);
+                        const docFile = zip.file("word/document.xml");
+                        if (docFile) {
+                            const xmlText = await docFile.async("text");
+                            const parser = new DOMParser();
+                            const xmlDoc = parser.parseFromString(xmlText, "application/xml");
+                            const paragraphs = xmlDoc.getElementsByTagName("w:p");
+                            const lines = [];
+
+                            for (let i = 0; i < paragraphs.length; i++) {
+                                const texts = paragraphs[i].getElementsByTagName("w:t");
+                                let line = "";
+                                for (let j = 0; j < texts.length; j++) {
+                                    line += texts[j].textContent;
+                                }
+                                if (line.trim().length > 0) lines.push(line.trim());
+                            }
+                            if (lines.length > 0) return lines.join("\n\n");
+                        }
+                    } catch (zipErr) {
+                        console.warn("JSZip DOCX attempt failed, trying fallback:", zipErr);
+                    }
+                }
+
+                // Fallback: Check for RTF or binary Word readable text runs
+                const decoder = new TextDecoder("utf-8", { fatal: false });
+                const raw = decoder.decode(arrayBuffer);
+
+                if (raw.startsWith("{\\rtf")) {
+                    return raw
+                        .replace(/\\par[d]?/g, '\n')
+                        .replace(/\{\\*?\\[^{}]+;\}|\\(?:[a-z]{1,32}(-?\d{1,10})?|[\'\~])/gi, '')
+                        .replace(/[{}]/g, '')
+                        .trim();
+                }
+
+                const textRuns = raw.match(/[A-Za-z0-9\u00C0-\u024F\u1E00-\u1EFF,.:;?!'"\-\s]{4,}/g);
+                if (textRuns && textRuns.length > 0) {
+                    const cleanRuns = textRuns.map(r => r.trim()).filter(r => r.length > 8 && /\s/.test(r));
+                    if (cleanRuns.length > 0) return cleanRuns.join("\n\n");
+                }
+
+                throw new Error("Could not extract text from Word document. Please ensure it is a valid .docx file, or copy-paste text.");
+            }
+
+            async function extractTextFromImage(file, onProgress) {
+                if (typeof Tesseract === 'undefined') {
+                    throw new Error("Tesseract OCR library is not available.");
+                }
+                if (onProgress) onProgress("Initializing OCR text recognition...", 15);
+                try {
+                    const { data: { text } } = await Tesseract.recognize(
+                        file,
+                        'eng',
+                        {
+                            logger: m => {
+                                if (m.status === 'recognizing text' && onProgress) {
+                                    const pct = Math.round((m.progress || 0) * 100);
+                                    onProgress(`Scanning image text (${pct}%)...`, pct);
+                                }
+                            }
+                        }
+                    );
+                    return text ? text.trim() : "";
+                } catch (ocrErr) {
+                    console.warn("OCR recognition error:", ocrErr);
+                    throw new Error("OCR could not read image automatically (device may be offline). Please refer to the image preview and enter text.");
+                }
+            }
+
+            function parsePassageAndQuestions(rawText) {
+                const lines = rawText.split('\n').map(l => l.trim()).filter(Boolean);
+                if (lines.length === 0) return { title: '', content: '', questions: [] };
+
+                let qStartIndex = -1;
+                for (let i = 0; i < lines.length; i++) {
+                    const l = lines[i];
+                    if (/^(mga\s+tanong|mga\s+pangutana|questions|comprehension\s+check|tanong)\b/i.test(l) ||
+                        (/^\s*(?:q\s*1|tanong\s*1|1\.)\s+/i.test(l) && i > 0)) {
+                        qStartIndex = i;
+                        break;
+                    }
+                }
+
+                let storyLines = [];
+                let qLines = [];
+                if (qStartIndex !== -1) {
+                    storyLines = lines.slice(0, qStartIndex);
+                    qLines = lines.slice(qStartIndex);
+                    if (/^(mga\s+tanong|mga\s+pangutana|questions|comprehension\s+check)\b/i.test(qLines[0])) {
+                        qLines.shift();
+                    }
+                } else {
+                    storyLines = lines;
+                }
+
+                let title = "";
+                let content = "";
+                if (storyLines.length > 1 && storyLines[0].length <= 60 && !storyLines[0].endsWith('.')) {
+                    title = storyLines[0];
+                    content = storyLines.slice(1).join('\n\n');
+                } else {
+                    content = storyLines.join('\n\n');
+                }
+
+                const questions = [];
+                let currentQ = null;
+                for (let line of qLines) {
+                    const qMatch = line.match(/^\s*(?:[0-9]+[.)]|q[0-9]*[:.)]|tanong\s*[0-9]*[:.)])\s*(.+)/i);
+                    if (qMatch) {
+                        if (currentQ) questions.push(currentQ);
+                        let qText = qMatch[1].trim();
+                        let ans = "";
+                        const ansMatch = qText.match(/(?:[\(\[](?:sagot|tubag|ans|answer)?[:\s]*([^\)\]]+)[\)\]]|\b(?:ans|answer|sagot)[:\s]+(.+))$/i);
+                        if (ansMatch) {
+                            ans = (ansMatch[1] || ansMatch[2] || "").trim();
+                            qText = qText.replace(ansMatch[0], '').trim();
+                        }
+                        currentQ = { q: qText, a: ans };
+                    } else if (currentQ) {
+                        if (/^(?:ans|answer|sagot|tubag)[:\s]+(.+)/i.test(line)) {
+                            currentQ.a = line.replace(/^(?:ans|answer|sagot|tubag)[:\s]+/i, '').trim();
+                        } else {
+                            currentQ.q += " " + line;
+                        }
+                    }
+                }
+                if (currentQ) questions.push(currentQ);
+
+                return { title, content, questions };
+            }
+
+            function renderModalQuestions(questions) {
+                const qList = document.getElementById('modalQuestionsList');
+                if (!qList) return;
+                qList.innerHTML = '';
+                if (!questions || questions.length === 0) return;
+                questions.forEach(q => addModalQuestionRow(q.q || '', q.a || ''));
+            }
+
+            function addModalQuestionRow(qVal = '', aVal = '') {
+                const qList = document.getElementById('modalQuestionsList');
+                if (!qList) return;
+                const row = document.createElement('div');
+                row.className = 'modal-q-row';
+                row.style.cssText = 'display: flex; gap: 8px; align-items: center; background: white; padding: 6px 10px; border-radius: 6px; border: 1px solid #fbcfe8;';
+                row.innerHTML = `
+                    <input type="text" class="form-input modal-q-input" placeholder="Question text" value="${qVal.replace(/"/g, '&quot;')}" style="flex: 2; padding: 5px 8px; font-size: 0.85rem;">
+                    <input type="text" class="form-input modal-a-input" placeholder="Answer key" value="${aVal.replace(/"/g, '&quot;')}" style="flex: 1; padding: 5px 8px; font-size: 0.85rem;">
+                    <button type="button" class="btn btn-sm btn-danger modal-q-remove" style="padding: 4px 8px; font-size: 0.78rem;">&times;</button>
+                `;
+                row.querySelector('.modal-q-remove').addEventListener('click', () => row.remove());
+                qList.appendChild(row);
+            }
+
+            function getModalQuestions() {
+                const qs = [];
+                document.querySelectorAll('#modalQuestionsList .modal-q-row').forEach(row => {
+                    const q = row.querySelector('.modal-q-input')?.value.trim();
+                    const a = row.querySelector('.modal-a-input')?.value.trim();
+                    if (q) qs.push({ q, a: a || '' });
+                });
+                return qs;
+            }
+
+            function applyPassageModal() {
+                const targetTask = document.getElementById('modalTargetTask').value;
+                const content = document.getElementById('modalExtractedText').value.trim();
+                if (!content) {
+                    alert("Please enter or extract text before applying.");
+                    return;
+                }
+
+                let learner = learners.find(x => x.id === currentLearnerId);
+                if (!learner) {
+                    if (learners.length > 0) {
+                        learner = learners[0];
+                        currentLearnerId = learner.id;
+                    } else {
+                        alert("No learners enrolled yet. Please add a learner first.");
+                        return;
+                    }
+                }
+
+                if (targetTask === '1') {
+                    const isSentenceMode = learner.grade > 1;
+                    if (isSentenceMode) {
+                        let lines = content.split('\n').map(s => s.trim()).filter(Boolean);
+                        if (lines.length === 1 && lines[0].includes('.')) {
+                            lines = lines[0].match(/[^.!?]+[.!?]+/g)?.map(s => s.trim()).filter(Boolean) || lines;
+                        }
+                        if (lines.length < 2) {
+                            alert(`Please provide at least 2 sentences for Task 1 (Grade ${learner.grade}).`);
+                            return;
+                        }
+                        letters = lines;
+                        ensureUserEditsPath('task1', learner.grade);
+                        userEdits.task1[learner.grade][activeAssessmentLang] = lines;
+                        saveUserEdits();
+                        task1WordMiscues = {};
+                        const wordCount = letters.reduce((acc, sent) => acc + sent.split(/\s+/).filter(w => w.trim()).length, 0);
+                        totalLetterScore = wordCount;
+                        renderLetterGrid('sentence');
+                        const t1Input = document.getElementById('task1Input');
+                        if (t1Input) t1Input.value = lines.join('\n');
+                        const t1Area = document.getElementById('task1EditArea');
+                        if (t1Area) t1Area.style.display = 'none';
+                    } else {
+                        const items = content.split(/[\n,]+/).map(s => s.trim()).filter(Boolean);
+                        if (items.length === 0) {
+                            alert("Please provide items/letters for Task 1.");
+                            return;
+                        }
+                        letters = items;
+                        ensureUserEditsPath('task1', learner.grade);
+                        userEdits.task1[learner.grade][activeAssessmentLang] = letters;
+                        saveUserEdits();
+                        totalLetterScore = 0;
+                        letterScores = {};
+                        renderLetterGrid('letter');
+                    }
+                    alert("Passage/items successfully updated for Task 1!");
+                    closePassageModal();
+                    switchTask('1');
+                } else if (targetTask === '2') {
+                    let lines = content.split('\n').map(s => s.trim()).filter(Boolean);
+                    if (lines.length === 1 && lines[0].includes('.')) {
+                        lines = lines[0].match(/[^.!?]+[.!?]+/g)?.map(s => s.trim()).filter(Boolean) || lines;
+                    }
+                    if (lines.length === 0) {
+                        alert("Please provide at least one sentence for Task 2.");
+                        return;
+                    }
+                    sentences = lines;
+                    sentenceMiscues = [];
+                    ensureUserEditsPath('task2', learner.grade);
+                    userEdits.task2[learner.grade][activeAssessmentLang] = lines;
+                    saveUserEdits();
+                    renderSentenceDisplay();
+                    const sInput = document.getElementById('sentenceInput');
+                    if (sInput) sInput.value = lines.join('\n');
+                    const sArea = document.getElementById('sentenceEditArea');
+                    if (sArea) sArea.style.display = 'none';
+                    alert("Sentences successfully updated for Task 2!");
+                    closePassageModal();
+                    switchTask('2');
+                } else if (targetTask === '3') {
+                    const items = content.split('\n').map(s => s.trim()).filter(Boolean);
+                    if (items.length === 0) {
+                        alert("Please provide at least one item for Task 3.");
+                        return;
+                    }
+                    rhymePairs = items.map(p => ({ pair: p, isCorrect: null }));
+                    ensureUserEditsPath('task3', learner.grade);
+                    userEdits.task3[learner.grade][activeAssessmentLang] = rhymePairs.map(p => p.pair);
+                    saveUserEdits();
+                    renderRhymeList(learner.grade > 1 ? 'word' : 'rhyme');
+                    alert("Items successfully updated for Task 3!");
+                    closePassageModal();
+                    switchTask('3');
+                } else if (targetTask === '4') {
+                    const title = document.getElementById('modalStoryTitle').value.trim() || "Uploaded Story";
+                    const questions = getModalQuestions();
+                    const mode = document.querySelector('input[name="modalStoryMode"]:checked')?.value || 'new';
+
+                    if (mode === 'new') {
+                        storyPassages.push({ title, content, questions });
+                        currentStoryIdx = storyPassages.length - 1;
+                    } else {
+                        const existingQs = storyPassages[currentStoryIdx]?.questions || [];
+                        storyPassages[currentStoryIdx] = {
+                            title,
+                            content,
+                            questions: questions.length > 0 ? questions : existingQs
+                        };
+                    }
+
+                    ensureUserEditsPath('task4', learner.grade);
+                    userEdits.task4[learner.grade][activeAssessmentLang] = storyPassages;
+                    saveUserEdits();
+
+                    renderStorySelect();
+                    renderStoryDisplay();
+                    populateStoryEdit();
+                    resetTimer();
+                    storyMiscues = [];
+
+                    alert(`Reading passage "${title}" successfully applied to Task 4!`);
+                    closePassageModal();
+                    switchTask('4');
+                }
+            }
+
+            // ==========================================
             // RESULTS CALCULATION
             // ==========================================
             function renderResults(isStopped) {
@@ -7093,58 +8068,12 @@
 
             function updateClassAssessmentDropdown() {
                 const sel = document.getElementById('classAssessmentPeriod');
-                if (!sel) return;
-                let max = 0;
-                if (learners) learners.forEach(l => { if (l.assessments && l.assessments.length > max) max = l.assessments.length; });
-                const current = sel.value;
-                let html = '<option value="latest">Latest Assessment</option>';
-
-                // Collect assessment labels for each index
-                for (let i = 0; i < max; i++) {
-                    // Try to find a label from any learner at this assessment index
-                    let label = null;
-                    if (learners) {
-                        for (let l of learners) {
-                            if (l.assessments && l.assessments[i] && l.assessments[i].assessmentLabel) {
-                                label = l.assessments[i].assessmentLabel;
-                                break;
-                            }
-                        }
-                    }
-                    const displayText = label ? label : `Assessment ${i + 1}`;
-                    html += `<option value="${i}">${displayText}</option>`;
-                }
-
-                sel.innerHTML = html;
-                if (current && (current === 'latest' || parseInt(current) < max)) sel.value = current;
+                if (sel) populatePeriodDropdown(sel);
             }
 
             function updateDashboardDropdown() {
                 const sel = document.getElementById('dashboardAssessmentPeriod');
-                if (!sel) return;
-                let max = 0;
-                if (learners) learners.forEach(l => { if (l.assessments && l.assessments.length > max) max = l.assessments.length; });
-                const current = sel.value;
-                let html = '<option value="latest">Latest Assessment</option>';
-
-                // Collect assessment labels for each index
-                for (let i = 0; i < max; i++) {
-                    // Try to find a label from any learner at this assessment index
-                    let label = null;
-                    if (learners) {
-                        for (let l of learners) {
-                            if (l.assessments && l.assessments[i] && l.assessments[i].assessmentLabel) {
-                                label = l.assessments[i].assessmentLabel;
-                                break;
-                            }
-                        }
-                    }
-                    const displayText = label ? label : `Assessment ${i + 1}`;
-                    html += `<option value="${i}">${displayText}</option>`;
-                }
-
-                sel.innerHTML = html;
-                if (current && (current === 'latest' || parseInt(current) < max)) sel.value = current;
+                if (sel) populatePeriodDropdown(sel);
             }
 
             function exportStudentPDF() {
@@ -7331,15 +8260,18 @@
                     // Get assessment label if available
                     let periodText = "Latest Assessment";
                     if (!isLatest) {
-                        // Try to find a label from any learner at this assessment index
-                        let label = null;
-                        for (let l of learners) {
-                            if (l.assessments && l.assessments[periodIdx] && l.assessments[periodIdx].assessmentLabel) {
-                                label = l.assessments[periodIdx].assessmentLabel;
-                                break;
+                        if (isNaN(periodIdx)) {
+                            periodText = periodVal;
+                        } else {
+                            let label = null;
+                            for (let l of learners) {
+                                if (l.assessments && l.assessments[periodIdx] && l.assessments[periodIdx].assessmentLabel) {
+                                    label = l.assessments[periodIdx].assessmentLabel;
+                                    break;
+                                }
                             }
+                            periodText = label ? label : `Assessment ${periodIdx + 1}`;
                         }
-                        periodText = label ? label : `Assessment ${periodIdx + 1}`;
                     }
                     doc.text(`Reading Scoresheet - ${periodText}`, 14, 28);
 
@@ -7358,20 +8290,9 @@
                     });
 
                     sortedLearners.forEach((l, idx) => {
-                        let assess;
                         const classSubFilter = document.getElementById('classSubjectFilter');
                         const selectedSub = classSubFilter ? classSubFilter.value : 'all';
-
-                        if (isLatest) {
-                            if (selectedSub === 'all') {
-                                assess = l.assessments[l.assessments.length - 1];
-                            } else {
-                                assess = [...l.assessments].reverse().find(a => a.subject === selectedSub);
-                            }
-                        } else {
-                            assess = l.assessments[periodIdx];
-                            if (selectedSub !== 'all' && assess && assess.subject !== selectedSub) assess = null;
-                        }
+                        const assess = getLearnerAssessmentForPeriod(l, periodVal, selectedSub);
 
                         const date = assess ? new Date(assess.date).toLocaleDateString() : "-";
                         const p1 = assess?.part1 || { letter: 0, rhyme: 0, sentence: 0, profile: '-' };
@@ -7411,7 +8332,8 @@
                         styles: { fontSize: 8, cellPadding: 2 },
                         columnStyles: { 2: { cellWidth: 25 }, 19: { cellWidth: 25 } }
                     });
-                    doc.save(`Scoresheet_${isLatest ? 'Latest' : periodIdx + 1}.pdf`);
+                    const safeScoresheetName = isLatest ? 'Latest' : periodText.replace(/[^a-zA-Z0-9_-]/g, '_');
+                    doc.save(`Scoresheet_${safeScoresheetName}.pdf`);
                 } catch (e) { console.error(e); alert("Error generating PDF."); }
             }
 
@@ -7441,15 +8363,18 @@
                     // Get assessment label if available
                     let periodText = "Latest Assessment";
                     if (!isLatest) {
-                        // Try to find a label from any learner at this assessment index
-                        let label = null;
-                        for (let l of learners) {
-                            if (l.assessments && l.assessments[periodIdx] && l.assessments[periodIdx].assessmentLabel) {
-                                label = l.assessments[periodIdx].assessmentLabel;
-                                break;
+                        if (isNaN(periodIdx)) {
+                            periodText = periodVal;
+                        } else {
+                            let label = null;
+                            for (let l of learners) {
+                                if (l.assessments && l.assessments[periodIdx] && l.assessments[periodIdx].assessmentLabel) {
+                                    label = l.assessments[periodIdx].assessmentLabel;
+                                    break;
+                                }
                             }
+                            periodText = label ? label : `Assessment ${periodIdx + 1}`;
                         }
-                        periodText = label ? label : `Assessment ${periodIdx + 1}`;
                     }
                     doc.text(`Class Record - ${periodText}`, 14, 28);
 
@@ -7468,9 +8393,7 @@
                     });
 
                     sortedLearners.forEach((l, idx) => {
-                        let last;
-                        if (isLatest) last = l.assessments[l.assessments.length - 1];
-                        else last = l.assessments[periodIdx];
+                        const last = getLearnerAssessmentForPeriod(l, periodVal, 'all');
 
                         // FIX: Use case-insensitive check for gender
                         const genderLower = (l.gender || '').toLowerCase();
@@ -7509,7 +8432,8 @@
                         styles: { fontSize: 9, cellPadding: 3, halign: 'center', valign: 'middle' },
                         columnStyles: { 2: { halign: 'left', cellWidth: 40 }, 4: { cellWidth: 30 }, 9: { cellWidth: 35 } }
                     });
-                    doc.save(`ClassRecord_${isLatest ? 'Latest' : periodIdx + 1}.pdf`);
+                    const safeRecordName = isLatest ? 'Latest' : periodText.replace(/[^a-zA-Z0-9_-]/g, '_');
+                    doc.save(`ClassRecord_${safeRecordName}.pdf`);
                 } catch (e) { console.error(e); alert("Error generating Class Record."); }
             }
 
@@ -7538,15 +8462,18 @@
                     // Get assessment label if available
                     let periodText = "Latest Assessment";
                     if (!isLatest) {
-                        // Try to find a label from any learner at this assessment index
-                        let label = null;
-                        for (let l of learners) {
-                            if (l.assessments && l.assessments[periodIdx] && l.assessments[periodIdx].assessmentLabel) {
-                                label = l.assessments[periodIdx].assessmentLabel;
-                                break;
+                        if (isNaN(periodIdx)) {
+                            periodText = periodVal;
+                        } else {
+                            let label = null;
+                            for (let l of learners) {
+                                if (l.assessments && l.assessments[periodIdx] && l.assessments[periodIdx].assessmentLabel) {
+                                    label = l.assessments[periodIdx].assessmentLabel;
+                                    break;
+                                }
                             }
+                            periodText = label ? label : `Assessment ${periodIdx + 1}`;
                         }
-                        periodText = label ? label : `Assessment ${periodIdx + 1}`;
                     }
                     doc.text(`Class Summary - ${periodText}`, 105, 28, { align: "center" });
 
@@ -7570,25 +8497,15 @@
                     };
                     initCounts(stats.male); initCounts(stats.female);
 
+                    const classSubFilter = document.getElementById('classSubjectFilter');
+                    const selectedSub = classSubFilter ? classSubFilter.value : 'all';
+
                     learners.forEach(l => {
                         const isMale = (l.gender || '').toLowerCase() === 'male';
                         const target = isMale ? stats.male : stats.female;
                         target.enrolled++;
 
-                        let last;
-                        const classSubFilter = document.getElementById('classSubjectFilter');
-                        const selectedSub = classSubFilter ? classSubFilter.value : 'all';
-
-                        if (isLatest) {
-                            if (selectedSub === 'all') {
-                                last = l.assessments[l.assessments.length - 1];
-                            } else {
-                                last = [...l.assessments].reverse().find(a => a.subject === selectedSub);
-                            }
-                        } else {
-                            last = l.assessments[periodIdx];
-                            if (selectedSub !== 'all' && last && last.subject !== selectedSub) last = null;
-                        }
+                        const last = getLearnerAssessmentForPeriod(l, periodVal, selectedSub);
 
                         if (last) {
                             target.assessed++;
@@ -7656,7 +8573,8 @@
                         headStyles: { fillColor: [44, 62, 80], halign: 'center' }, styles: { fontSize: 10, cellPadding: 3 },
                         columnStyles: { 0: { cellWidth: 80 }, 1: { halign: 'center' }, 2: { halign: 'center' }, 3: { halign: 'center', fontStyle: 'bold' } }
                     });
-                    doc.save(`SummaryReport_${isLatest ? 'Latest' : periodIdx + 1}.pdf`);
+                    const safeSummaryName = isLatest ? 'Latest' : periodText.replace(/[^a-zA-Z0-9_-]/g, '_');
+                    doc.save(`ClassSummary_${safeSummaryName}.pdf`);
                 } catch (e) { console.error(e); alert("Error generating Class Summary."); }
             }
 

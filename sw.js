@@ -1,4 +1,4 @@
-const CACHE_NAME = 'readlens-v18';
+const CACHE_NAME = 'readlens-v23';
 const ASSETS = [
   './',
   './index.html',
