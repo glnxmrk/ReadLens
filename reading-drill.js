@@ -888,9 +888,69 @@
         },
 
         bindEvents() {
-            // Global delegate for audio buttons & click-to-speak elements
+            // Global delegate for audio buttons, click-to-speak elements, and card enlargement
             document.addEventListener('click', (e) => {
-                // 1. Direct open custom audio recorder/uploader for sound
+                // Explicit small action buttons that should NOT trigger whole-card enlargement
+                const isExplicitSmallButton = e.target.closest('.drill-btn-sound, .btn-icon, .btn-blend-cvc, .btn-edit-fuller-step, .btn-delete-fuller-step, [data-open-sound-custom], .btn-edit-letter, .btn-edit-letter-enlarged, .btn-edit-cvc, .btn-edit-cvc-enlarged, .btn-edit-blending, .btn-edit-blending-enlarged, .card-edit-btn');
+
+                // Teacher Edit Word & Card Handlers (Direct access without whole-card enlarge)
+                const editLetterTrigger = e.target.closest('.btn-edit-letter, .btn-edit-letter-enlarged');
+                if (editLetterTrigger) {
+                    const id = editLetterTrigger.getAttribute('data-id');
+                    const item = this.materials.letterSounds.find(l => l.id === id);
+                    if (item) this.showLetterEditorModal(item);
+                    return;
+                }
+
+                const editCvcTrigger = e.target.closest('.btn-edit-cvc, .btn-edit-cvc-enlarged');
+                if (editCvcTrigger) {
+                    const id = editCvcTrigger.getAttribute('data-id');
+                    const item = this.materials.cvcWords.find(w => w.id === id);
+                    if (item) this.showCVCEditorModal(item);
+                    return;
+                }
+
+                const editBlendTrigger = e.target.closest('.btn-edit-blending, .btn-edit-blending-enlarged');
+                if (editBlendTrigger) {
+                    const id = editBlendTrigger.getAttribute('data-id');
+                    const item = this.materials.soundBlending.find(b => b.id === id);
+                    if (item) this.showBlendingEditorModal(item);
+                    return;
+                }
+
+                // 1. Card Enlargement Handlers (for kids / classroom focus)
+                const letterCard = e.target.closest('[data-enlarge-letter]');
+                if (letterCard && !isExplicitSmallButton) {
+                    const id = letterCard.getAttribute('data-enlarge-letter');
+                    this.showEnlargedLetterCard(id);
+                    return;
+                }
+
+                const cvcCard = e.target.closest('[data-enlarge-cvc]');
+                if (cvcCard && !isExplicitSmallButton) {
+                    const id = cvcCard.getAttribute('data-enlarge-cvc');
+                    this.showEnlargedCVCCard(id);
+                    return;
+                }
+
+                const fullerEnlargeTrigger = e.target.closest('[data-enlarge-fuller]');
+                if (fullerEnlargeTrigger) {
+                    const isEditOrDelete = e.target.closest('.btn-edit-fuller-step, .btn-delete-fuller-step');
+                    if (!isEditOrDelete) {
+                        const id = fullerEnlargeTrigger.getAttribute('data-enlarge-fuller');
+                        this.showEnlargedFullerCard(id);
+                        return;
+                    }
+                }
+
+                const blendCard = e.target.closest('[data-enlarge-blending]');
+                if (blendCard && !isExplicitSmallButton) {
+                    const id = blendCard.getAttribute('data-enlarge-blending');
+                    this.showEnlargedBlendingCard(id);
+                    return;
+                }
+
+                // 2. Direct open custom audio recorder/uploader for sound
                 const customTrigger = e.target.closest('[data-open-sound-custom]');
                 if (customTrigger) {
                     const soundType = customTrigger.getAttribute('data-open-sound-custom');
@@ -899,7 +959,7 @@
                     return;
                 }
 
-                // 2. Pure phoneme playback (never TTS!)
+                // 3. Pure phoneme playback (never TTS!)
                 const phonemeTarget = e.target.closest('[data-play-phoneme]');
                 if (phonemeTarget) {
                     const sound = phonemeTarget.getAttribute('data-play-phoneme');
@@ -907,7 +967,7 @@
                     return;
                 }
 
-                // 3. Spoken letter name playback
+                // 4. Spoken letter name playback
                 const nameTarget = e.target.closest('[data-play-name]');
                 if (nameTarget) {
                     const char = nameTarget.getAttribute('data-play-name');
@@ -915,7 +975,7 @@
                     return;
                 }
 
-                // 4. Decodable word playback (prerecorded audio first, TTS fallback)
+                // 5. Decodable word playback (prerecorded audio first, TTS fallback)
                 const wordTarget = e.target.closest('[data-play-word]');
                 if (wordTarget) {
                     const word = wordTarget.getAttribute('data-play-word');
@@ -923,7 +983,7 @@
                     return;
                 }
 
-                // 5. Syllable playback
+                // 6. Syllable playback
                 const syllableTarget = e.target.closest('[data-play-syllable]');
                 if (syllableTarget) {
                     const syl = syllableTarget.getAttribute('data-play-syllable');
@@ -931,7 +991,7 @@
                     return;
                 }
 
-                // 6. Generic data-speak fallback
+                // 7. Generic data-speak fallback
                 const target = e.target.closest('[data-speak]');
                 if (target) {
                     const text = (target.getAttribute('data-speak') || '').trim();
@@ -1238,7 +1298,11 @@
                 const hasCustomPhoneme = !!DrillAudio.getCustomAudio('phoneme', letterSound);
 
                 cardsHtml += `
-                    <div class="drill-card" data-id="${item.id}">
+                    <div class="drill-card drill-clickable-card" data-id="${item.id}" data-enlarge-letter="${item.id}" title="Click card to enlarge for kids 🔍">
+                        <div class="card-zoom-badge" title="Click to enlarge for kids"><i class="fas fa-expand-alt"></i></div>
+                        <button type="button" class="card-edit-btn btn-edit-letter" data-id="${item.id}" title="Edit Letter Word & Picture (Teacher)">
+                            <i class="fas fa-pencil-alt"></i>
+                        </button>
                         <div class="drill-card-img-wrap" data-play-word="${wordToPlay}" title="Click to hear '${wordToPlay}'">
                             ${imgDisplay}
                         </div>
@@ -1504,6 +1568,9 @@
                                 <option value="o">Short O (/ɒ/)</option>
                                 <option value="u">Short U (/ʌ/)</option>
                             </select>
+                            <button type="button" class="btn btn-sm btn-primary" id="btnAddCVCWord" style="background: #0284c7; border: none; font-weight: 700; border-radius: 8px; padding: 6px 14px; display: inline-flex; align-items: center; gap: 6px; cursor: pointer; font-size: 0.85rem;">
+                                <i class="fas fa-plus"></i> Add CVC Word
+                            </button>
                         </div>
                     </div>
 
@@ -1527,6 +1594,11 @@
                         this.renderCVCExplorer(document.getElementById('cvcSubModeContainer'), filterSel.value);
                     }
                 });
+            }
+
+            const addCvcBtn = document.getElementById('btnAddCVCWord');
+            if (addCvcBtn) {
+                addCvcBtn.addEventListener('click', () => this.showCVCEditorModal(null));
             }
 
             const subContainer = document.getElementById('cvcSubModeContainer');
@@ -1560,8 +1632,12 @@
                 const hasCustomWord = !!DrillAudio.getCustomAudio('word', item.word);
 
                 cardsHtml += `
-                    <div class="drill-card cvc-card" style="align-items: stretch; text-align: left;" data-word-id="${item.id}">
-                        <div style="display: flex; gap: 12px; align-items: center; margin-bottom: 10px;">
+                    <div class="drill-card cvc-card drill-clickable-card" style="align-items: stretch; text-align: left;" data-word-id="${item.id}" data-enlarge-cvc="${item.id}" title="Click card to enlarge for kids 🔍">
+                        <div class="card-zoom-badge" title="Click to enlarge for kids"><i class="fas fa-expand-alt"></i></div>
+                        <button type="button" class="card-edit-btn btn-edit-cvc" data-id="${item.id}" title="Edit CVC Word (${item.word})">
+                            <i class="fas fa-pencil-alt"></i>
+                        </button>
+                        <div style="display: flex; gap: 12px; align-items: center; margin-bottom: 10px; margin-top: 8px;">
                             <div class="drill-card-img-wrap" style="width: 70px; height: 70px; margin: 0; flex-shrink: 0;" data-play-word="${item.word}" title="Click to hear '${item.word}'">
                                 ${imgDisplay}
                             </div>
@@ -1570,9 +1646,14 @@
                                     <div class="drill-card-word" style="font-size: 1.8rem; cursor: pointer; color: #0284c7;" data-play-word="${item.word}" title="Click to hear '${item.word}'">
                                         ${item.word}
                                     </div>
-                                    <button type="button" class="btn btn-sm btn-icon" style="background: ${hasCustomWord ? '#ecfdf5' : '#f8fafc'}; color: ${hasCustomWord ? '#059669' : '#64748b'}; border: 1px solid #e2e8f0; border-radius: 6px; padding: 4px 8px;" data-open-sound-custom="word" data-sound-key="${item.word}" title="${hasCustomWord ? 'Custom word audio active. Click to manage.' : 'Record or upload custom audio for ' + item.word}">
-                                        <i class="fas ${hasCustomWord ? 'fa-microphone-alt' : 'fa-microphone'}"></i>
-                                    </button>
+                                    <div style="display: flex; gap: 6px; align-items: center;">
+                                        <button type="button" class="btn btn-sm btn-icon btn-edit-cvc" data-id="${item.id}" title="Edit CVC Word (${item.word})" style="background: #f8fafc; color: #0284c7; border: 1px solid #cbd5e1; border-radius: 6px; padding: 4px 8px;">
+                                            <i class="fas fa-pencil-alt"></i>
+                                        </button>
+                                        <button type="button" class="btn btn-sm btn-icon" style="background: ${hasCustomWord ? '#ecfdf5' : '#f8fafc'}; color: ${hasCustomWord ? '#059669' : '#64748b'}; border: 1px solid #e2e8f0; border-radius: 6px; padding: 4px 8px;" data-open-sound-custom="word" data-sound-key="${item.word}" title="${hasCustomWord ? 'Custom word audio active. Click to manage.' : 'Record or upload custom audio for ' + item.word}">
+                                            <i class="fas ${hasCustomWord ? 'fa-microphone-alt' : 'fa-microphone'}"></i>
+                                        </button>
+                                    </div>
                                 </div>
                                 <span class="sf1-badge" style="background:#e0f2fe; color:#0369a1; cursor: pointer;" data-play-syllable="${item.family}" title="Click to hear family ${item.family}">Family ${item.family}</span>
                             </div>
@@ -1819,7 +1900,7 @@
                 `).join('');
 
                 stepsHtml += `
-                    <div class="fuller-step-card ${isActive ? 'active' : ''}" data-step-id="${step.id}">
+                    <div class="fuller-step-card drill-clickable-card ${isActive ? 'active' : ''}" data-step-id="${step.id}" data-enlarge-fuller="${step.id}" title="Click to enlarge step for kids 🔍">
                         <div class="fuller-step-header">
                             <div class="fuller-step-title">
                                 <span class="fuller-step-num">${step.order || (idx + 1)}</span>
@@ -1829,6 +1910,9 @@
                                 </div>
                             </div>
                             <div style="display: flex; align-items: center; gap: 8px;">
+                                <button type="button" class="btn btn-sm btn-primary btn-enlarge-fuller-step" data-enlarge-fuller="${step.id}" title="Enlarge step for kids" style="background:#059669; border-color:#047857; font-weight:700;">
+                                    <i class="fas fa-expand-alt"></i> Enlarge for Kids
+                                </button>
                                 <button type="button" class="btn btn-sm btn-secondary btn-edit-fuller-step" data-id="${step.id}" title="Edit this step">
                                     <i class="fas fa-edit"></i> Edit
                                 </button>
@@ -2045,6 +2129,616 @@
         },
 
         // =========================================================================
+        // DRILL MATERIALS EDITORS (LETTER SOUNDS, CVC WORDS, SOUND BLENDING)
+        // =========================================================================
+
+        showLetterEditorModal(letterItem) {
+            if (!letterItem) return;
+
+            let currentImg = letterItem.customImg || '';
+            let currentIcon = letterItem.icon || '📖';
+
+            const modalHtml = `
+                <div class="modal-overlay active" id="letterEditorModal" style="z-index: 1400;">
+                    <div class="modal-content" style="max-width: 600px; max-height: 90vh; display: flex; flex-direction: column; border-radius: 14px; overflow: hidden; box-shadow: 0 20px 45px rgba(0,0,0,0.3);">
+                        <div class="modal-header" style="background: linear-gradient(135deg, #0284c7, #0369a1); color: white; padding: 16px 20px; display: flex; justify-content: space-between; align-items: center;">
+                            <h3 class="modal-title" style="margin: 0; color: white; font-size: 1.25rem; font-weight: 700; display: flex; align-items: center; gap: 8px;">
+                                <i class="fas fa-edit"></i> Edit Letter Sound Card (${letterItem.letter})
+                            </h3>
+                            <button type="button" class="btn-close-modal" id="btnCloseLetterEditor" style="background: none; border: none; color: white; font-size: 1.4rem; cursor: pointer;">&times;</button>
+                        </div>
+                        <div class="modal-body" style="padding: 20px; overflow-y: auto; flex: 1;">
+                            <div style="display: flex; gap: 16px; margin-bottom: 16px; align-items: center; background: #f8fafc; padding: 12px; border-radius: 10px; border: 1px solid #e2e8f0;">
+                                <div id="letterEditImgPreview" style="width: 76px; height: 76px; border-radius: 10px; border: 2px solid #cbd5e1; background: #fff; display: flex; align-items: center; justify-content: center; overflow: hidden; flex-shrink: 0;">
+                                    ${currentImg ? `<img src="${currentImg}" style="width: 100%; height: 100%; object-fit: cover;">` : `<span style="font-size: 40px;">${currentIcon}</span>`}
+                                </div>
+                                <div style="flex: 1;">
+                                    <label style="font-size: 0.8rem; font-weight: 700; color: #475569; display: block; margin-bottom: 6px;">Card Picture / Illustration</label>
+                                    <div style="display: flex; gap: 8px; flex-wrap: wrap; align-items: center;">
+                                        <label class="btn btn-sm btn-secondary" style="cursor: pointer; margin: 0; display: inline-flex; align-items: center; gap: 6px; font-weight: 600;">
+                                            <i class="fas fa-upload"></i> Upload Image File
+                                            <input type="file" id="leImgFileInput" accept="image/*" style="display: none;">
+                                        </label>
+                                        <button type="button" class="btn btn-sm btn-secondary" id="leClearImgBtn" style="color: #dc2626; border-color: #fca5a5;">
+                                            <i class="fas fa-undo"></i> Reset to Emoji
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-bottom: 14px;">
+                                <div class="form-group" style="margin: 0;">
+                                    <label class="form-label" style="font-weight: 700; font-size: 0.85rem; color: #334155;">Letter Display</label>
+                                    <input type="text" id="leLetter" class="form-input" value="${letterItem.letter || ''}" style="font-size: 1.15rem; font-weight: 700; text-align: center;">
+                                </div>
+                                <div class="form-group" style="margin: 0;">
+                                    <label class="form-label" style="font-weight: 700; font-size: 0.85rem; color: #334155;">Spoken Name</label>
+                                    <input type="text" id="leName" class="form-input" value="${letterItem.name || ''}" placeholder="e.g. A" style="font-size: 1.15rem; text-align: center; font-weight: 600;">
+                                </div>
+                            </div>
+
+                            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-bottom: 14px;">
+                                <div class="form-group" style="margin: 0;">
+                                    <label class="form-label" style="font-weight: 700; font-size: 0.85rem; color: #0284c7;">
+                                        <i class="fas fa-globe-americas"></i> English Keyword Word
+                                    </label>
+                                    <input type="text" id="leEnWord" class="form-input" value="${letterItem.enWord || ''}" placeholder="e.g. apple" style="font-size: 1.1rem; font-weight: 700;">
+                                    <small style="color: #64748b; font-size: 0.75rem;">Word taught and spoken in English</small>
+                                </div>
+                                <div class="form-group" style="margin: 0;">
+                                    <label class="form-label" style="font-weight: 700; font-size: 0.85rem; color: #d97706;">
+                                        <i class="fas fa-flag"></i> Filipino Keyword Word
+                                    </label>
+                                    <input type="text" id="leFilWord" class="form-input" value="${letterItem.filWord || ''}" placeholder="e.g. araw" style="font-size: 1.1rem; font-weight: 700;">
+                                    <small style="color: #64748b; font-size: 0.75rem;">Word taught and spoken in Filipino</small>
+                                </div>
+                            </div>
+
+                            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-bottom: 14px;">
+                                <div class="form-group" style="margin: 0;">
+                                    <label class="form-label" style="font-weight: 700; font-size: 0.85rem; color: #334155;">Phonetic IPA Symbol</label>
+                                    <input type="text" id="leIpa" class="form-input" value="${letterItem.ipa || ''}" placeholder="e.g. /æ/" style="font-size: 1rem; text-align: center;">
+                                </div>
+                                <div class="form-group" style="margin: 0;">
+                                    <label class="form-label" style="font-weight: 700; font-size: 0.85rem; color: #334155;">Fallback Emoji</label>
+                                    <input type="text" id="leIcon" class="form-input" value="${letterItem.icon || '📖'}" style="font-size: 1.25rem; text-align: center;">
+                                </div>
+                            </div>
+
+                            <div class="form-group" style="margin-bottom: 0;">
+                                <label class="form-label" style="font-weight: 700; font-size: 0.85rem; color: #334155;">Prerecorded Phoneme Audio Identifier</label>
+                                <input type="text" id="leSound" class="form-input" value="${letterItem.sound || letterItem.letter.charAt(0).toLowerCase()}" style="font-size: 0.95rem; background: #f8fafc;" readonly>
+                                <small style="color: #64748b; font-size: 0.75rem;">Plays the pure authentic prerecorded phoneme audio. Custom voice can be recorded via the microphone button.</small>
+                            </div>
+                        </div>
+                        <div class="modal-footer" style="padding: 14px 20px; border-top: 1px solid #e2e8f0; display: flex; justify-content: flex-end; gap: 10px; background: #f8fafc;">
+                            <button type="button" class="btn btn-secondary" id="btnCancelLetterEditor">Cancel</button>
+                            <button type="button" class="btn btn-primary" id="btnSaveLetterEditor" style="background: #0284c7; border-color: #0284c7; font-weight: 700; padding: 8px 22px;">
+                                <i class="fas fa-save"></i> Save Changes
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            `;
+
+            const wrapper = document.createElement('div');
+            wrapper.innerHTML = modalHtml;
+            document.body.appendChild(wrapper);
+
+            const closeModal = () => wrapper.remove();
+            document.getElementById('btnCloseLetterEditor').addEventListener('click', closeModal);
+            document.getElementById('btnCancelLetterEditor').addEventListener('click', closeModal);
+
+            const imgFileInput = document.getElementById('leImgFileInput');
+            if (imgFileInput) {
+                imgFileInput.addEventListener('change', (e) => {
+                    if (e.target.files && e.target.files[0]) {
+                        const reader = new FileReader();
+                        reader.onload = (re) => {
+                            currentImg = re.target.result;
+                            const preview = document.getElementById('letterEditImgPreview');
+                            if (preview) {
+                                preview.innerHTML = `<img src="${currentImg}" style="width: 100%; height: 100%; object-fit: cover;">`;
+                            }
+                        };
+                        reader.readAsDataURL(e.target.files[0]);
+                    }
+                });
+            }
+
+            const clearImgBtn = document.getElementById('leClearImgBtn');
+            if (clearImgBtn) {
+                clearImgBtn.addEventListener('click', () => {
+                    currentImg = '';
+                    const preview = document.getElementById('letterEditImgPreview');
+                    const iconVal = document.getElementById('leIcon').value || '📖';
+                    if (preview) {
+                        preview.innerHTML = `<span style="font-size: 40px;">${iconVal}</span>`;
+                    }
+                });
+            }
+
+            document.getElementById('btnSaveLetterEditor').addEventListener('click', async () => {
+                const letter = document.getElementById('leLetter').value.trim();
+                const name = document.getElementById('leName').value.trim();
+                const enWord = document.getElementById('leEnWord').value.trim();
+                const filWord = document.getElementById('leFilWord').value.trim();
+                const ipa = document.getElementById('leIpa').value.trim();
+                const icon = document.getElementById('leIcon').value.trim();
+
+                if (!letter || !enWord) {
+                    alert('Please enter both the letter and the English keyword word.');
+                    return;
+                }
+
+                letterItem.letter = letter;
+                letterItem.name = name || letter.charAt(0);
+                letterItem.enWord = enWord;
+                letterItem.filWord = filWord || enWord;
+                letterItem.ipa = ipa || ('/' + letter.charAt(0).toLowerCase() + '/');
+                letterItem.icon = icon || '📖';
+                letterItem.customImg = currentImg;
+
+                await this.saveMaterials();
+                closeModal();
+
+                // Re-render letter grid if on screen
+                const subContainer = document.getElementById('letterSoundsSubModeContainer');
+                if (subContainer) {
+                    this.renderLetterExplorer(subContainer);
+                }
+
+                // Re-open enlarged card if currently open so kid view reflects edits immediately
+                const enlargedCard = document.getElementById('drillEnlargeOverlay');
+                if (enlargedCard) {
+                    this.showEnlargedLetterCard(letterItem.id);
+                }
+            });
+        },
+
+        showCVCEditorModal(cvcItem = null) {
+            const isNew = !cvcItem;
+            const current = cvcItem || {
+                id: 'cvc_' + Date.now(),
+                word: '',
+                vowel: 'a',
+                family: '-at',
+                sounds: ['c', 'a', 't'],
+                icon: '🐱',
+                customImg: '',
+                sentence: ''
+            };
+
+            let currentImg = current.customImg || '';
+            let currentIcon = current.icon || '📖';
+
+            const modalHtml = `
+                <div class="modal-overlay active" id="cvcEditorModal" style="z-index: 1400;">
+                    <div class="modal-content" style="max-width: 620px; max-height: 90vh; display: flex; flex-direction: column; border-radius: 14px; overflow: hidden; box-shadow: 0 20px 45px rgba(0,0,0,0.3);">
+                        <div class="modal-header" style="background: linear-gradient(135deg, #0284c7, #0369a1); color: white; padding: 16px 20px; display: flex; justify-content: space-between; align-items: center;">
+                            <h3 class="modal-title" style="margin: 0; color: white; font-size: 1.25rem; font-weight: 700; display: flex; align-items: center; gap: 8px;">
+                                <i class="fas fa-shapes"></i> ${isNew ? 'Add New CVC Word' : 'Edit CVC Word: ' + current.word}
+                            </h3>
+                            <button type="button" class="btn-close-modal" id="btnCloseCVCEditor" style="background: none; border: none; color: white; font-size: 1.4rem; cursor: pointer;">&times;</button>
+                        </div>
+                        <div class="modal-body" style="padding: 20px; overflow-y: auto; flex: 1;">
+                            <div style="display: flex; gap: 16px; margin-bottom: 16px; align-items: center; background: #f8fafc; padding: 12px; border-radius: 10px; border: 1px solid #e2e8f0;">
+                                <div id="cvcEditImgPreview" style="width: 76px; height: 76px; border-radius: 10px; border: 2px solid #cbd5e1; background: #fff; display: flex; align-items: center; justify-content: center; overflow: hidden; flex-shrink: 0;">
+                                    ${currentImg ? `<img src="${currentImg}" style="width: 100%; height: 100%; object-fit: cover;">` : `<span style="font-size: 40px;">${currentIcon}</span>`}
+                                </div>
+                                <div style="flex: 1;">
+                                    <label style="font-size: 0.8rem; font-weight: 700; color: #475569; display: block; margin-bottom: 6px;">Card Picture / Illustration</label>
+                                    <div style="display: flex; gap: 8px; flex-wrap: wrap; align-items: center;">
+                                        <label class="btn btn-sm btn-secondary" style="cursor: pointer; margin: 0; display: inline-flex; align-items: center; gap: 6px; font-weight: 600;">
+                                            <i class="fas fa-upload"></i> Upload Image File
+                                            <input type="file" id="cvcImgFileInput" accept="image/*" style="display: none;">
+                                        </label>
+                                        <button type="button" class="btn btn-sm btn-secondary" id="cvcClearImgBtn" style="color: #dc2626; border-color: #fca5a5;">
+                                            <i class="fas fa-undo"></i> Reset to Emoji
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div style="display: grid; grid-template-columns: 2fr 1fr; gap: 14px; margin-bottom: 14px;">
+                                <div class="form-group" style="margin: 0;">
+                                    <label class="form-label" style="font-weight: 700; font-size: 0.85rem; color: #0284c7;">CVC Word</label>
+                                    <input type="text" id="cvcWord" class="form-input" value="${current.word || ''}" placeholder="e.g. cat, dog, sun" style="font-size: 1.25rem; font-weight: 700; text-transform: lowercase;">
+                                </div>
+                                <div class="form-group" style="margin: 0;">
+                                    <label class="form-label" style="font-weight: 700; font-size: 0.85rem; color: #334155;">Emoji Icon</label>
+                                    <input type="text" id="cvcIcon" class="form-input" value="${current.icon || '📖'}" style="font-size: 1.25rem; text-align: center;">
+                                </div>
+                            </div>
+
+                            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-bottom: 14px;">
+                                <div class="form-group" style="margin: 0;">
+                                    <label class="form-label" style="font-weight: 700; font-size: 0.85rem; color: #334155;">Middle Vowel Sound</label>
+                                    <select id="cvcVowel" class="form-input" style="font-weight: 600;">
+                                        <option value="a" ${current.vowel === 'a' ? 'selected' : ''}>A (/æ/ as in cat)</option>
+                                        <option value="e" ${current.vowel === 'e' ? 'selected' : ''}>E (/ɛ/ as in bed)</option>
+                                        <option value="i" ${current.vowel === 'i' ? 'selected' : ''}>I (/ɪ/ as in sit)</option>
+                                        <option value="o" ${current.vowel === 'o' ? 'selected' : ''}>O (/ɒ/ as in hot)</option>
+                                        <option value="u" ${current.vowel === 'u' ? 'selected' : ''}>U (/ʌ/ as in sun)</option>
+                                    </select>
+                                </div>
+                                <div class="form-group" style="margin: 0;">
+                                    <label class="form-label" style="font-weight: 700; font-size: 0.85rem; color: #334155;">Word Family</label>
+                                    <input type="text" id="cvcFamily" class="form-input" value="${current.family || ''}" placeholder="e.g. -at, -ed, -ig, -op, -un" style="font-weight: 600;">
+                                </div>
+                            </div>
+
+                            <div class="form-group" style="margin-bottom: 14px;">
+                                <label class="form-label" style="font-weight: 700; font-size: 0.85rem; color: #0284c7;">
+                                    Individual Phonemes (comma-separated for sound blending)
+                                </label>
+                                <input type="text" id="cvcSounds" class="form-input" value="${(current.sounds || []).join(', ')}" placeholder="e.g. c, a, t" style="font-size: 1.05rem; font-weight: 700;">
+                                <small style="color: #64748b; font-size: 0.75rem;">Pronounced using authentic prerecorded phonemes during interactive blending.</small>
+                            </div>
+
+                            <div class="form-group" style="margin-bottom: 0;">
+                                <label class="form-label" style="font-weight: 700; font-size: 0.85rem; color: #334155;">Sample Practice Sentence</label>
+                                <input type="text" id="cvcSentence" class="form-input" value="${current.sentence || ''}" placeholder="e.g. The cat sat on the mat.">
+                            </div>
+                        </div>
+                        <div class="modal-footer" style="padding: 14px 20px; border-top: 1px solid #e2e8f0; display: flex; justify-content: space-between; align-items: center; background: #f8fafc;">
+                            <div>
+                                ${!isNew ? `
+                                    <button type="button" class="btn btn-danger" id="btnDeleteCVCWord" style="background: #ef4444; border-color: #ef4444; font-weight: 700; padding: 8px 14px;">
+                                        <i class="fas fa-trash-alt"></i> Delete Word
+                                    </button>
+                                ` : '<span></span>'}
+                            </div>
+                            <div style="display: flex; gap: 10px;">
+                                <button type="button" class="btn btn-secondary" id="btnCancelCVCEditor">Cancel</button>
+                                <button type="button" class="btn btn-primary" id="btnSaveCVCEditor" style="background: #0284c7; border-color: #0284c7; font-weight: 700; padding: 8px 22px;">
+                                    <i class="fas fa-save"></i> ${isNew ? 'Add Word' : 'Save Changes'}
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `;
+
+            const wrapper = document.createElement('div');
+            wrapper.innerHTML = modalHtml;
+            document.body.appendChild(wrapper);
+
+            const closeModal = () => wrapper.remove();
+            document.getElementById('btnCloseCVCEditor').addEventListener('click', closeModal);
+            document.getElementById('btnCancelCVCEditor').addEventListener('click', closeModal);
+
+            const wordInput = document.getElementById('cvcWord');
+            const soundsInput = document.getElementById('cvcSounds');
+            const familyInput = document.getElementById('cvcFamily');
+            const vowelSelect = document.getElementById('cvcVowel');
+
+            // Auto-fill sounds and family as teacher types word (if new)
+            if (isNew) {
+                wordInput.addEventListener('input', () => {
+                    const val = wordInput.value.trim().toLowerCase();
+                    if (val) {
+                        soundsInput.value = val.split('').join(', ');
+                        if (val.length >= 2) {
+                            familyInput.value = '-' + val.slice(-2);
+                        }
+                        const v = val.split('').find(ch => ['a','e','i','o','u'].includes(ch));
+                        if (v) vowelSelect.value = v;
+                    }
+                });
+            }
+
+            const imgFileInput = document.getElementById('cvcImgFileInput');
+            if (imgFileInput) {
+                imgFileInput.addEventListener('change', (e) => {
+                    if (e.target.files && e.target.files[0]) {
+                        const reader = new FileReader();
+                        reader.onload = (re) => {
+                            currentImg = re.target.result;
+                            const preview = document.getElementById('cvcEditImgPreview');
+                            if (preview) {
+                                preview.innerHTML = `<img src="${currentImg}" style="width: 100%; height: 100%; object-fit: cover;">`;
+                            }
+                        };
+                        reader.readAsDataURL(e.target.files[0]);
+                    }
+                });
+            }
+
+            const clearImgBtn = document.getElementById('cvcClearImgBtn');
+            if (clearImgBtn) {
+                clearImgBtn.addEventListener('click', () => {
+                    currentImg = '';
+                    const preview = document.getElementById('cvcEditImgPreview');
+                    const iconVal = document.getElementById('cvcIcon').value || '📖';
+                    if (preview) {
+                        preview.innerHTML = `<span style="font-size: 40px;">${iconVal}</span>`;
+                    }
+                });
+            }
+
+            // Delete handler
+            const deleteBtn = document.getElementById('btnDeleteCVCWord');
+            if (deleteBtn) {
+                deleteBtn.addEventListener('click', async () => {
+                    if (confirm(`Are you sure you want to delete the CVC word "${current.word}"?`)) {
+                        this.materials.cvcWords = this.materials.cvcWords.filter(w => w.id !== current.id);
+                        await this.saveMaterials();
+                        closeModal();
+                        const enlarged = document.getElementById('drillEnlargeOverlay');
+                        if (enlarged) enlarged.remove();
+                        this.render();
+                    }
+                });
+            }
+
+            // Save handler
+            document.getElementById('btnSaveCVCEditor').addEventListener('click', async () => {
+                const word = wordInput.value.trim().toLowerCase();
+                const vowel = vowelSelect.value;
+                const family = familyInput.value.trim() || ('-' + word.slice(-2));
+                const sounds = soundsInput.value.split(',').map(s => s.trim().toLowerCase()).filter(Boolean);
+                const sentence = document.getElementById('cvcSentence').value.trim();
+                const icon = document.getElementById('cvcIcon').value.trim() || '📖';
+
+                if (!word) {
+                    alert('Please enter a CVC word.');
+                    return;
+                }
+
+                current.word = word;
+                current.vowel = vowel;
+                current.family = family;
+                current.sounds = sounds.length > 0 ? sounds : word.split('');
+                current.sentence = sentence;
+                current.icon = icon;
+                current.customImg = currentImg;
+
+                if (isNew) {
+                    this.materials.cvcWords.push(current);
+                }
+
+                await this.saveMaterials();
+                closeModal();
+
+                // Re-render CVC explorer
+                const subContainer = document.getElementById('cvcSubModeContainer');
+                if (subContainer) {
+                    const vFilter = document.getElementById('cvcVowelFilter');
+                    this.renderCVCExplorer(subContainer, vFilter ? vFilter.value : 'all');
+                } else {
+                    this.render();
+                }
+
+                // Update badge count
+                const cvcBadge = document.querySelector('[data-category="cvc"] .badge');
+                if (cvcBadge) cvcBadge.textContent = this.materials.cvcWords.length;
+
+                // Re-open enlarged card if open
+                const enlargedCard = document.getElementById('drillEnlargeOverlay');
+                if (enlargedCard) {
+                    this.showEnlargedCVCCard(current.id);
+                }
+            });
+        },
+
+        showBlendingEditorModal(blendItem = null) {
+            const isNew = !blendItem;
+            const current = blendItem || {
+                id: 'sb_' + Date.now(),
+                word: '',
+                sounds: ['f', 'r', 'o', 'g'],
+                ipa: ['/f/', '/r/', '/ɒ/', '/ɡ/'],
+                level: '4-Phoneme Blend',
+                icon: '🐸',
+                customImg: ''
+            };
+
+            let currentImg = current.customImg || '';
+            let currentIcon = current.icon || '📖';
+
+            const modalHtml = `
+                <div class="modal-overlay active" id="blendingEditorModal" style="z-index: 1400;">
+                    <div class="modal-content" style="max-width: 620px; max-height: 90vh; display: flex; flex-direction: column; border-radius: 14px; overflow: hidden; box-shadow: 0 20px 45px rgba(0,0,0,0.3);">
+                        <div class="modal-header" style="background: linear-gradient(135deg, #10b981, #059669); color: white; padding: 16px 20px; display: flex; justify-content: space-between; align-items: center;">
+                            <h3 class="modal-title" style="margin: 0; color: white; font-size: 1.25rem; font-weight: 700; display: flex; align-items: center; gap: 8px;">
+                                <i class="fas fa-magic"></i> ${isNew ? 'Add New Blending Word' : 'Edit Blending Word: ' + current.word}
+                            </h3>
+                            <button type="button" class="btn-close-modal" id="btnCloseBlendingEditor" style="background: none; border: none; color: white; font-size: 1.4rem; cursor: pointer;">&times;</button>
+                        </div>
+                        <div class="modal-body" style="padding: 20px; overflow-y: auto; flex: 1;">
+                            <div style="display: flex; gap: 16px; margin-bottom: 16px; align-items: center; background: #f8fafc; padding: 12px; border-radius: 10px; border: 1px solid #e2e8f0;">
+                                <div id="blendingEditImgPreview" style="width: 76px; height: 76px; border-radius: 10px; border: 2px solid #cbd5e1; background: #fff; display: flex; align-items: center; justify-content: center; overflow: hidden; flex-shrink: 0;">
+                                    ${currentImg ? `<img src="${currentImg}" style="width: 100%; height: 100%; object-fit: cover;">` : `<span style="font-size: 40px;">${currentIcon}</span>`}
+                                </div>
+                                <div style="flex: 1;">
+                                    <label style="font-size: 0.8rem; font-weight: 700; color: #475569; display: block; margin-bottom: 6px;">Card Picture / Illustration</label>
+                                    <div style="display: flex; gap: 8px; flex-wrap: wrap; align-items: center;">
+                                        <label class="btn btn-sm btn-secondary" style="cursor: pointer; margin: 0; display: inline-flex; align-items: center; gap: 6px; font-weight: 600;">
+                                            <i class="fas fa-upload"></i> Upload Image File
+                                            <input type="file" id="blendImgFileInput" accept="image/*" style="display: none;">
+                                        </label>
+                                        <button type="button" class="btn btn-sm btn-secondary" id="blendClearImgBtn" style="color: #dc2626; border-color: #fca5a5;">
+                                            <i class="fas fa-undo"></i> Reset to Emoji
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div style="display: grid; grid-template-columns: 2fr 1fr; gap: 14px; margin-bottom: 14px;">
+                                <div class="form-group" style="margin: 0;">
+                                    <label class="form-label" style="font-weight: 700; font-size: 0.85rem; color: #059669;">Blending Word</label>
+                                    <input type="text" id="blendWord" class="form-input" value="${current.word || ''}" placeholder="e.g. frog, stop, lamp, cat" style="font-size: 1.25rem; font-weight: 700; text-transform: lowercase;">
+                                </div>
+                                <div class="form-group" style="margin: 0;">
+                                    <label class="form-label" style="font-weight: 700; font-size: 0.85rem; color: #334155;">Emoji Icon</label>
+                                    <input type="text" id="blendIcon" class="form-input" value="${current.icon || '📖'}" style="font-size: 1.25rem; text-align: center;">
+                                </div>
+                            </div>
+
+                            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-bottom: 14px;">
+                                <div class="form-group" style="margin: 0;">
+                                    <label class="form-label" style="font-weight: 700; font-size: 0.85rem; color: #334155;">Difficulty Level</label>
+                                    <select id="blendLevel" class="form-input" style="font-weight: 600;">
+                                        <option value="2-Phoneme" ${current.level === '2-Phoneme' ? 'selected' : ''}>2-Phoneme</option>
+                                        <option value="3-Phoneme" ${current.level === '3-Phoneme' ? 'selected' : ''}>3-Phoneme</option>
+                                        <option value="4-Phoneme Blend" ${current.level === '4-Phoneme Blend' ? 'selected' : ''}>4-Phoneme Blend</option>
+                                        <option value="Advanced Blend" ${current.level === 'Advanced Blend' ? 'selected' : ''}>Advanced Blend</option>
+                                    </select>
+                                </div>
+                                <div class="form-group" style="margin: 0;">
+                                    <label class="form-label" style="font-weight: 700; font-size: 0.85rem; color: #334155;">IPA Phonemes (comma-separated)</label>
+                                    <input type="text" id="blendIpa" class="form-input" value="${(current.ipa || []).join(', ')}" placeholder="e.g. /f/, /r/, /ɒ/, /ɡ/" style="font-size: 0.95rem; text-align: center;">
+                                </div>
+                            </div>
+
+                            <div class="form-group" style="margin-bottom: 0;">
+                                <label class="form-label" style="font-weight: 700; font-size: 0.85rem; color: #059669;">
+                                    Individual Sound Sequence (comma-separated)
+                                </label>
+                                <input type="text" id="blendSounds" class="form-input" value="${(current.sounds || []).join(', ')}" placeholder="e.g. f, r, o, g" style="font-size: 1.15rem; font-weight: 700;">
+                                <small style="color: #64748b; font-size: 0.75rem;">Determines each tile on the blender track and the exact sound order during blending.</small>
+                            </div>
+                        </div>
+                        <div class="modal-footer" style="padding: 14px 20px; border-top: 1px solid #e2e8f0; display: flex; justify-content: space-between; align-items: center; background: #f8fafc;">
+                            <div>
+                                ${!isNew ? `
+                                    <button type="button" class="btn btn-danger" id="btnDeleteBlendWord" style="background: #ef4444; border-color: #ef4444; font-weight: 700; padding: 8px 14px;">
+                                        <i class="fas fa-trash-alt"></i> Delete Word
+                                    </button>
+                                ` : '<span></span>'}
+                            </div>
+                            <div style="display: flex; gap: 10px;">
+                                <button type="button" class="btn btn-secondary" id="btnCancelBlendingEditor">Cancel</button>
+                                <button type="button" class="btn btn-primary" id="btnSaveBlendingEditor" style="background: #10b981; border-color: #059669; font-weight: 700; padding: 8px 22px;">
+                                    <i class="fas fa-save"></i> ${isNew ? 'Add Word' : 'Save Changes'}
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `;
+
+            const wrapper = document.createElement('div');
+            wrapper.innerHTML = modalHtml;
+            document.body.appendChild(wrapper);
+
+            const closeModal = () => wrapper.remove();
+            document.getElementById('btnCloseBlendingEditor').addEventListener('click', closeModal);
+            document.getElementById('btnCancelBlendingEditor').addEventListener('click', closeModal);
+
+            const wordInput = document.getElementById('blendWord');
+            const soundsInput = document.getElementById('blendSounds');
+            const ipaInput = document.getElementById('blendIpa');
+            const levelSelect = document.getElementById('blendLevel');
+
+            // Auto-fill sounds and IPA as teacher types word (if new)
+            if (isNew) {
+                wordInput.addEventListener('input', () => {
+                    const val = wordInput.value.trim().toLowerCase();
+                    if (val) {
+                        const chars = val.split('');
+                        soundsInput.value = chars.join(', ');
+                        ipaInput.value = chars.map(c => `/${c}/`).join(', ');
+                        if (chars.length === 2) levelSelect.value = '2-Phoneme';
+                        else if (chars.length === 3) levelSelect.value = '3-Phoneme';
+                        else if (chars.length >= 4) levelSelect.value = '4-Phoneme Blend';
+                    }
+                });
+            }
+
+            const imgFileInput = document.getElementById('blendImgFileInput');
+            if (imgFileInput) {
+                imgFileInput.addEventListener('change', (e) => {
+                    if (e.target.files && e.target.files[0]) {
+                        const reader = new FileReader();
+                        reader.onload = (re) => {
+                            currentImg = re.target.result;
+                            const preview = document.getElementById('blendingEditImgPreview');
+                            if (preview) {
+                                preview.innerHTML = `<img src="${currentImg}" style="width: 100%; height: 100%; object-fit: cover;">`;
+                            }
+                        };
+                        reader.readAsDataURL(e.target.files[0]);
+                    }
+                });
+            }
+
+            const clearImgBtn = document.getElementById('blendClearImgBtn');
+            if (clearImgBtn) {
+                clearImgBtn.addEventListener('click', () => {
+                    currentImg = '';
+                    const preview = document.getElementById('blendingEditImgPreview');
+                    const iconVal = document.getElementById('blendIcon').value || '📖';
+                    if (preview) {
+                        preview.innerHTML = `<span style="font-size: 40px;">${iconVal}</span>`;
+                    }
+                });
+            }
+
+            // Delete handler
+            const deleteBtn = document.getElementById('btnDeleteBlendWord');
+            if (deleteBtn) {
+                deleteBtn.addEventListener('click', async () => {
+                    if (confirm(`Are you sure you want to delete the blending word "${current.word}"?`)) {
+                        this.materials.soundBlending = this.materials.soundBlending.filter(b => b.id !== current.id);
+                        await this.saveMaterials();
+                        closeModal();
+                        const enlarged = document.getElementById('drillEnlargeOverlay');
+                        if (enlarged) enlarged.remove();
+                        this.render();
+                    }
+                });
+            }
+
+            // Save handler
+            document.getElementById('btnSaveBlendingEditor').addEventListener('click', async () => {
+                const word = wordInput.value.trim().toLowerCase();
+                const sounds = soundsInput.value.split(',').map(s => s.trim().toLowerCase()).filter(Boolean);
+                const ipa = ipaInput.value.split(',').map(s => s.trim()).filter(Boolean);
+                const level = levelSelect.value;
+                const icon = document.getElementById('blendIcon').value.trim() || '📖';
+
+                if (!word) {
+                    alert('Please enter a blending word.');
+                    return;
+                }
+
+                current.word = word;
+                current.sounds = sounds.length > 0 ? sounds : word.split('');
+                current.ipa = ipa.length > 0 ? ipa : current.sounds.map(s => `/${s}/`);
+                current.level = level;
+                current.icon = icon;
+                current.customImg = currentImg;
+
+                if (isNew) {
+                    this.materials.soundBlending.push(current);
+                }
+
+                await this.saveMaterials();
+                closeModal();
+
+                // Re-render blending view
+                const subContainer = document.getElementById('blendingSubModeContainer');
+                if (subContainer) {
+                    this.renderBlenderTool(subContainer);
+                } else {
+                    this.render();
+                }
+
+                // Update badge count
+                const blendBadge = document.querySelector('[data-category="blending"] .badge');
+                if (blendBadge) blendBadge.textContent = this.materials.soundBlending.length;
+
+                // Re-open enlarged card if open
+                const enlargedCard = document.getElementById('drillEnlargeOverlay');
+                if (enlargedCard) {
+                    this.showEnlargedBlendingCard(current.id);
+                }
+            });
+        },
+
+        // =========================================================================
         // 8. MODULE 4: SOUND BLENDING
         // =========================================================================
 
@@ -2063,6 +2757,9 @@
                                 <i class="fas fa-puzzle-piece"></i> Word Tile Builder
                             </button>
                         </div>
+                        <button type="button" class="btn btn-sm btn-primary" id="btnAddBlendWordTop" style="background: #10b981; border: none; font-weight: 700; border-radius: 8px; padding: 6px 14px; display: inline-flex; align-items: center; gap: 6px; cursor: pointer; font-size: 0.85rem;">
+                            <i class="fas fa-plus"></i> Add Blending Word
+                        </button>
                     </div>
 
                     <div id="blendingSubModeContainer">
@@ -2076,6 +2773,11 @@
                     this.renderSoundBlendingView(area);
                 });
             });
+
+            const addTopBtn = area.querySelector('#btnAddBlendWordTop');
+            if (addTopBtn) {
+                addTopBtn.addEventListener('click', () => this.showBlendingEditorModal(null));
+            }
 
             const subContainer = document.getElementById('blendingSubModeContainer');
             if (this.activeSubMode === 'explorer') {
@@ -2103,14 +2805,49 @@
                     ${sIdx < item.sounds.length - 1 ? '<div class="blending-connector">+</div>' : ''}
                 `).join('');
 
+                const allBlendingCardsHtml = words.map((bWord, bIdx) => {
+                    const bImg = bWord.customImg
+                        ? `<img src="${bWord.customImg}" alt="${bWord.word}">`
+                        : `<span class="drill-card-img-placeholder" style="font-size:32px;">${bWord.icon || '📖'}</span>`;
+
+                    const chips = bWord.sounds.map(s => `<span class="sf1-badge" style="background:#e0f2fe; color:#0369a1; font-size:0.75rem; padding:1px 5px;">${s}</span>`).join(' ');
+
+                    return `
+                        <div class="drill-card blending-card drill-clickable-card ${bIdx === idx ? 'active-blend-card' : ''}" data-enlarge-blending="${bWord.id}" title="Click card to enlarge for kids 🔍" style="padding:12px; position:relative; ${bIdx === idx ? 'border-color:#10b981; background:#f0fdf4;' : ''}">
+                            <div class="card-zoom-badge" title="Click to enlarge for kids"><i class="fas fa-expand-alt"></i></div>
+                            <button type="button" class="card-edit-btn btn-edit-blending" data-id="${bWord.id}" title="Edit Blending Word (${bWord.word})" style="width: 24px; height: 24px; font-size: 0.7rem; top: 6px; left: 6px;">
+                                <i class="fas fa-pencil-alt"></i>
+                            </button>
+                            <div class="drill-card-img-wrap" style="width:58px; height:58px; margin-bottom:6px;">
+                                ${bImg}
+                            </div>
+                            <div class="drill-card-word" style="font-size:1.35rem; color:#0f766e; margin-bottom:2px;">
+                                ${bWord.word}
+                            </div>
+                            <div style="margin-bottom:6px;">
+                                ${chips}
+                            </div>
+                            <span class="sf1-badge" style="background:#f8fafc; color:#64748b; font-size:0.68rem;">${bWord.level}</span>
+                        </div>
+                    `;
+                }).join('');
+
                 container.innerHTML = `
                     <div class="blending-container">
                         <!-- Navigation between words -->
-                        <div style="display: flex; justify-content: space-between; align-items: center; width: 100%; max-width: 650px;">
+                        <div style="display: flex; justify-content: space-between; align-items: center; width: 100%; max-width: 650px; flex-wrap: wrap; gap: 8px;">
                             <button type="button" class="btn btn-sm btn-secondary" id="btnPrevBlendWord" ${idx === 0 ? 'disabled' : ''}>
                                 <i class="fas fa-arrow-left"></i> Previous Word
                             </button>
-                            <span style="font-weight: 700; color: #475569;">Word ${idx + 1} of ${words.length} (${item.level})</span>
+                            <div style="display: flex; align-items: center; gap: 8px;">
+                                <span style="font-weight: 700; color: #475569;">Word ${idx + 1} of ${words.length} (${item.level})</span>
+                                <button type="button" class="btn btn-sm btn-outline" id="btnEditActiveBlendWord" title="Edit current blending word" style="background:#ffffff; border:1.5px solid #10b981; color:#059669; font-weight:700; padding: 4px 10px; font-size: 0.82rem; border-radius:6px; cursor:pointer;">
+                                    <i class="fas fa-pencil-alt"></i> Edit Word
+                                </button>
+                                <button type="button" class="btn btn-sm btn-primary" id="btnEnlargeActiveBlender" title="Enlarge for kids" style="background:#10b981; border-color:#059669; font-weight:700; padding: 4px 10px; font-size: 0.82rem;">
+                                    <i class="fas fa-expand-alt"></i> Enlarge for Kids
+                                </button>
+                            </div>
                             <button type="button" class="btn btn-sm btn-secondary" id="btnNextBlendWord" ${idx === words.length - 1 ? 'disabled' : ''}>
                                 Next Word <i class="fas fa-arrow-right"></i>
                             </button>
@@ -2139,6 +2876,21 @@
                             </div>
                             <i class="fas fa-volume-up" style="font-size: 24px; color: #10b981; margin-left: auto;"></i>
                         </div>
+
+                        <!-- All 13 Blending Word Cards Grid -->
+                        <div style="margin-top: 24px; width: 100%; max-width: 750px;">
+                            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; flex-wrap: wrap; gap: 8px;">
+                                <div style="font-size: 0.92rem; font-weight: 800; color: #334155; display: flex; align-items: center; gap: 8px;">
+                                    <i class="fas fa-layer-group" style="color: #10b981;"></i> All Blending Word Cards (${words.length} Cards - Click to Enlarge for Kids 🔍)
+                                </div>
+                                <button type="button" class="btn btn-sm btn-primary" id="btnAddBlendWordGrid" style="background: #10b981; border-color: #059669; font-weight: 700; border-radius: 8px; padding: 5px 12px; display: inline-flex; align-items: center; gap: 6px; cursor: pointer; font-size: 0.82rem;">
+                                    <i class="fas fa-plus"></i> Add Blending Word
+                                </button>
+                            </div>
+                            <div class="drill-cards-grid" style="grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: 12px;">
+                                ${allBlendingCardsHtml}
+                            </div>
+                        </div>
                     </div>
                 `;
 
@@ -2147,7 +2899,7 @@
                     tile.addEventListener('click', () => {
                         const s = tile.getAttribute('data-sound');
                         tile.classList.add('highlighted');
-                        DrillAudio.playPhoneme(s, 'en-US', () => {
+                        DrillAudio.playPhoneme(s, () => {
                             setTimeout(() => tile.classList.remove('highlighted'), 200);
                         });
                     });
@@ -2177,6 +2929,30 @@
                                 }
                             }
                         );
+                    });
+                }
+
+                // Edit Active Blend Word Button
+                const editActiveBtn = document.getElementById('btnEditActiveBlendWord');
+                if (editActiveBtn) {
+                    editActiveBtn.addEventListener('click', () => {
+                        this.showBlendingEditorModal(item);
+                    });
+                }
+
+                // Add Blend Word from Cards Grid Header
+                const addGridBtn = document.getElementById('btnAddBlendWordGrid');
+                if (addGridBtn) {
+                    addGridBtn.addEventListener('click', () => {
+                        this.showBlendingEditorModal(null);
+                    });
+                }
+
+                // Enlarge Active Blender Button
+                const enlargeActiveBtn = document.getElementById('btnEnlargeActiveBlender');
+                if (enlargeActiveBtn) {
+                    enlargeActiveBtn.addEventListener('click', () => {
+                        this.showEnlargedBlendingCard(idx);
                     });
                 }
 
@@ -3815,6 +4591,547 @@
 
             this.progressRecords.push(record);
             this.saveProgress();
+        },
+
+        // =========================================================================
+        // 10. ENLARGED CARD (KID VIEW / CLASSROOM SPOTLIGHT) SYSTEM
+        // =========================================================================
+
+        createEnlargeModal(modalContentHtml, onKeyDown = null) {
+            const existing = document.getElementById('drillEnlargeOverlay');
+            if (existing) existing.remove();
+
+            const overlay = document.createElement('div');
+            overlay.id = 'drillEnlargeOverlay';
+            overlay.className = 'drill-enlarge-overlay';
+            overlay.innerHTML = modalContentHtml;
+            document.body.appendChild(overlay);
+
+            let keyHandler = null;
+            const close = () => {
+                if (keyHandler) document.removeEventListener('keydown', keyHandler);
+                overlay.style.opacity = '0';
+                overlay.style.transition = 'opacity 0.15s ease';
+                setTimeout(() => overlay.remove(), 150);
+            };
+
+            keyHandler = (e) => {
+                if (e.key === 'Escape') {
+                    close();
+                } else if (onKeyDown) {
+                    onKeyDown(e, close);
+                }
+            };
+            document.addEventListener('keydown', keyHandler);
+
+            overlay.addEventListener('click', (e) => {
+                if (e.target === overlay || e.target.closest('.drill-enlarge-close-btn')) {
+                    close();
+                }
+            });
+
+            return { overlay, close };
+        },
+
+        showEnlargedLetterCard(letterId) {
+            const list = this.materials.letterSounds;
+            let idx = list.findIndex(l => l.id === letterId);
+            if (idx === -1) idx = 0;
+            const item = list[idx];
+
+            const langSel = document.getElementById('lsLangSelector');
+            const lang = langSel ? langSel.value : 'en-US';
+            const wordToPlay = lang === 'fil-PH' ? item.filWord : item.enWord;
+            const letterSound = (item.sound || item.letter.charAt(0)).toLowerCase();
+            const letterName = item.name || item.letter.charAt(0);
+            const hasCustomPhoneme = !!DrillAudio.getCustomAudio('phoneme', letterSound);
+
+            const imgDisplay = item.customImg
+                ? `<img src="${item.customImg}" alt="${item.letter}">`
+                : `<span class="drill-enlarge-img-placeholder">${item.icon || '📖'}</span>`;
+
+            const modalHtml = `
+                <div class="drill-enlarge-card" role="dialog" aria-modal="true" aria-label="Letter Sound Card">
+                    <div class="drill-enlarge-header">
+                        <div class="drill-enlarge-title-wrap">
+                            <span class="drill-enlarge-pill"><i class="fas fa-font"></i> Letter Sounds</span>
+                            <span class="drill-enlarge-meta">Letter ${idx + 1} of ${list.length}</span>
+                        </div>
+                        <div style="display: flex; align-items: center; gap: 8px;">
+                            <button type="button" class="btn-edit-letter-enlarged" data-id="${item.id}" title="Edit this letter word & card" style="background: #ffffff; border: 1.5px solid #0284c7; border-radius: 8px; padding: 6px 12px; font-weight: 700; color: #0284c7; cursor: pointer; display: inline-flex; align-items: center; gap: 6px; font-size: 0.85rem; transition: all 0.2s;">
+                                <i class="fas fa-edit"></i> Edit Word & Card
+                            </button>
+                            <button type="button" class="drill-enlarge-close-btn" title="Close (Esc)" aria-label="Close">
+                                <i class="fas fa-times"></i>
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="drill-enlarge-body">
+                        <div class="drill-enlarge-img-wrap" data-play-word="${wordToPlay}" title="Click to hear '${wordToPlay}'">
+                            ${imgDisplay}
+                        </div>
+
+                        <div class="drill-enlarge-letter" data-play-phoneme="${letterSound}" title="Click to hear phoneme /${letterSound}/">
+                            ${item.letter}
+                        </div>
+
+                        <div class="drill-enlarge-phoneme-badge" data-play-phoneme="${letterSound}" title="Click to hear authentic phonetic sound">
+                            <i class="fas fa-volume-up"></i> Phonetic Sound: ${item.ipa}
+                        </div>
+
+                        <div class="drill-enlarge-word" data-play-word="${wordToPlay}" title="Click to hear '${wordToPlay}'">
+                            ${wordToPlay}
+                        </div>
+
+                        <div class="drill-enlarge-actions-grid">
+                            <button type="button" class="drill-enlarge-action-btn drill-enlarge-btn-primary" data-play-phoneme="${letterSound}">
+                                <i class="fas fa-volume-up" style="font-size:1.2rem;"></i> Sound ${item.ipa}
+                            </button>
+                            <button type="button" class="drill-enlarge-action-btn drill-enlarge-btn-secondary" data-play-name="${letterName}">
+                                <i class="fas fa-comment-dots" style="font-size:1.2rem;"></i> Say Name "${letterName}"
+                            </button>
+                            <button type="button" class="drill-enlarge-action-btn drill-enlarge-btn-purple" data-play-word="${wordToPlay}">
+                                <i class="fas fa-book-reader" style="font-size:1.2rem;"></i> Word "${wordToPlay}"
+                            </button>
+                            <button type="button" class="drill-enlarge-action-btn drill-enlarge-btn-ghost" data-open-sound-custom="phoneme" data-sound-key="${letterSound}">
+                                <i class="fas ${hasCustomPhoneme ? 'fa-microphone-alt' : 'fa-microphone'}" style="color:${hasCustomPhoneme ? '#059669' : '#7c3aed'};"></i> ${hasCustomPhoneme ? 'Teacher Custom Audio' : 'Record Audio'}
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="drill-enlarge-footer">
+                        <button type="button" class="drill-enlarge-nav-btn" id="btnEnlargePrev" ${idx === 0 ? 'disabled' : ''}>
+                            <i class="fas fa-arrow-left"></i> Previous Letter
+                        </button>
+                        <span style="font-size: 0.82rem; color: #64748b; font-weight: 600;">Use ◀ / ▶ arrows to flip</span>
+                        <button type="button" class="drill-enlarge-nav-btn" id="btnEnlargeNext" ${idx === list.length - 1 ? 'disabled' : ''}>
+                            Next Letter <i class="fas fa-arrow-right"></i>
+                        </button>
+                    </div>
+                </div>
+            `;
+
+            const modalObj = this.createEnlargeModal(modalHtml, (e) => {
+                if (e.key === 'ArrowLeft' && idx > 0) {
+                    this.showEnlargedLetterCard(list[idx - 1].id);
+                } else if (e.key === 'ArrowRight' && idx < list.length - 1) {
+                    this.showEnlargedLetterCard(list[idx + 1].id);
+                }
+            });
+
+            if (modalObj && modalObj.overlay) {
+                const editBtn = modalObj.overlay.querySelector('.btn-edit-letter-enlarged');
+                if (editBtn) {
+                    editBtn.addEventListener('click', (e) => {
+                        e.stopPropagation();
+                        this.showLetterEditorModal(item);
+                    });
+                }
+            }
+
+            // Pronounce letter sound automatically when enlarged
+            setTimeout(() => {
+                DrillAudio.playPhoneme(letterSound);
+            }, 180);
+
+            const prevBtn = document.getElementById('btnEnlargePrev');
+            const nextBtn = document.getElementById('btnEnlargeNext');
+            if (prevBtn) prevBtn.addEventListener('click', () => this.showEnlargedLetterCard(list[idx - 1].id));
+            if (nextBtn) nextBtn.addEventListener('click', () => this.showEnlargedLetterCard(list[idx + 1].id));
+        },
+
+        showEnlargedCVCCard(wordId) {
+            const list = this.materials.cvcWords;
+            let idx = list.findIndex(w => w.id === wordId);
+            if (idx === -1) idx = 0;
+            const item = list[idx];
+
+            const imgDisplay = item.customImg
+                ? `<img src="${item.customImg}" alt="${item.word}">`
+                : `<span class="drill-enlarge-img-placeholder">${item.icon || '📖'}</span>`;
+
+            const sounds = item.sounds || item.word.split('');
+            const tilesHtml = sounds.map((s, sIdx) => `
+                <div class="drill-enlarge-tile cvc-modal-tile" data-tile-idx="${sIdx}" data-play-phoneme="${s}" title="Click to hear /${s}/">
+                    <span class="drill-enlarge-tile-letter">${s}</span>
+                    <span class="drill-enlarge-tile-sub">/${s}/</span>
+                </div>
+                ${sIdx < sounds.length - 1 ? '<span style="font-size:1.8rem; font-weight:800; color:#94a3b8;">+</span>' : ''}
+            `).join('');
+
+            const modalHtml = `
+                <div class="drill-enlarge-card" role="dialog" aria-modal="true" aria-label="CVC Word Card">
+                    <div class="drill-enlarge-header">
+                        <div class="drill-enlarge-title-wrap">
+                            <span class="drill-enlarge-pill" style="background:#0284c7;"><i class="fas fa-shapes"></i> CVC Word</span>
+                            <span class="drill-enlarge-meta">Word ${idx + 1} of ${list.length} • Family ${item.family}</span>
+                        </div>
+                        <div style="display: flex; align-items: center; gap: 8px;">
+                            <button type="button" class="btn-edit-cvc-enlarged" data-id="${item.id}" title="Edit this CVC word & sentence" style="background: #ffffff; border: 1.5px solid #0284c7; border-radius: 8px; padding: 6px 12px; font-weight: 700; color: #0284c7; cursor: pointer; display: inline-flex; align-items: center; gap: 6px; font-size: 0.85rem; transition: all 0.2s;">
+                                <i class="fas fa-edit"></i> Edit Word & Card
+                            </button>
+                            <button type="button" class="drill-enlarge-close-btn" title="Close (Esc)" aria-label="Close">
+                                <i class="fas fa-times"></i>
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="drill-enlarge-body">
+                        <div class="drill-enlarge-img-wrap" data-play-word="${item.word}" title="Click to hear '${item.word}'">
+                            ${imgDisplay}
+                        </div>
+
+                        <div class="drill-enlarge-word" data-play-word="${item.word}" title="Click to hear '${item.word}'">
+                            ${item.word}
+                        </div>
+
+                        <div style="font-size: 0.85rem; font-weight: 800; color: #64748b; text-transform: uppercase; letter-spacing: 0.5px;">
+                            Tap individual sounds to hear phonemes:
+                        </div>
+
+                        <div class="drill-enlarge-sound-tiles">
+                            ${tilesHtml}
+                        </div>
+
+                        <div style="width: 100%; max-width: 440px; margin: 4px 0 10px 0;">
+                            <button type="button" class="drill-enlarge-action-btn drill-enlarge-btn-primary" id="btnModalBlendCVC" style="width: 100%; font-size: 1.25rem; padding: 14px 24px;">
+                                <i class="fas fa-magic"></i> Blend Sounds & Read Word
+                            </button>
+                        </div>
+
+                        ${item.sentence ? `
+                            <div class="drill-enlarge-sentence-banner" data-speak="${item.sentence}" title="Click to hear sentence aloud">
+                                <span><i class="fas fa-volume-up" style="color:#3b82f6; margin-right:8px;"></i> "${item.sentence}"</span>
+                                <i class="fas fa-play-circle" style="color:#3b82f6; font-size:1.4rem;"></i>
+                            </div>
+                        ` : ''}
+                    </div>
+
+                    <div class="drill-enlarge-footer">
+                        <button type="button" class="drill-enlarge-nav-btn" id="btnEnlargePrev" ${idx === 0 ? 'disabled' : ''}>
+                            <i class="fas fa-arrow-left"></i> Previous Word
+                        </button>
+                        <span style="font-size: 0.82rem; color: #64748b; font-weight: 600;">Use ◀ / ▶ arrows to flip</span>
+                        <button type="button" class="drill-enlarge-nav-btn" id="btnEnlargeNext" ${idx === list.length - 1 ? 'disabled' : ''}>
+                            Next Word <i class="fas fa-arrow-right"></i>
+                        </button>
+                    </div>
+                </div>
+            `;
+
+            const modalObj = this.createEnlargeModal(modalHtml, (e) => {
+                if (e.key === 'ArrowLeft' && idx > 0) {
+                    this.showEnlargedCVCCard(list[idx - 1].id);
+                } else if (e.key === 'ArrowRight' && idx < list.length - 1) {
+                    this.showEnlargedCVCCard(list[idx + 1].id);
+                }
+            });
+
+            if (modalObj && modalObj.overlay) {
+                const editBtn = modalObj.overlay.querySelector('.btn-edit-cvc-enlarged');
+                if (editBtn) {
+                    editBtn.addEventListener('click', (e) => {
+                        e.stopPropagation();
+                        this.showCVCEditorModal(item);
+                    });
+                }
+            }
+
+            // Pronounce word automatically when enlarged
+            setTimeout(() => {
+                DrillAudio.playWord(item.word);
+            }, 180);
+
+            // Wire Blend button inside modal
+            const blendBtn = document.getElementById('btnModalBlendCVC');
+            if (blendBtn) {
+                blendBtn.addEventListener('click', () => {
+                    blendBtn.disabled = true;
+                    const tiles = document.querySelectorAll('.cvc-modal-tile');
+                    DrillAudio.blendPhonemes(
+                        sounds,
+                        item.word,
+                        (highlightIdx) => {
+                            tiles.forEach((t, i) => {
+                                if (i === highlightIdx) t.classList.add('highlighted');
+                                else t.classList.remove('highlighted');
+                            });
+                        },
+                        () => {
+                            blendBtn.disabled = false;
+                            tiles.forEach(t => t.classList.remove('highlighted'));
+                        }
+                    );
+                });
+            }
+
+            const prevBtn = document.getElementById('btnEnlargePrev');
+            const nextBtn = document.getElementById('btnEnlargeNext');
+            if (prevBtn) prevBtn.addEventListener('click', () => this.showEnlargedCVCCard(list[idx - 1].id));
+            if (nextBtn) nextBtn.addEventListener('click', () => this.showEnlargedCVCCard(list[idx + 1].id));
+        },
+
+        showEnlargedFullerCard(stepId) {
+            const list = this.materials.fullerMethod;
+            let idx = list.findIndex(s => s.id === stepId);
+            if (idx === -1) idx = 0;
+            const step = list[idx];
+
+            const letterChips = (step.letters || []).map(l => `
+                <div class="drill-enlarge-fuller-chip" style="background:#eff6ff; color:#1d4ed8; border-color:#bfdbfe; font-size:1.6rem; font-family:'Comic Sans MS', cursive;" data-play-name="${l}" title="Hear letter name ${l}">
+                    ${l} <i class="fas fa-volume-up" style="font-size: 1.1rem; color: #3b82f6;"></i>
+                </div>
+            `).join('');
+
+            const soundChips = (step.sounds || []).map(s => {
+                const cleanSound = s.replace(/^\//, '').replace(/\/.*$/, '').trim();
+                return `
+                    <div class="drill-enlarge-fuller-chip" style="background:#ecfdf5; color:#047857; border-color:#a7f3d0;" data-play-phoneme="${cleanSound}" title="Hear authentic phoneme ${s}">
+                        <i class="fas fa-volume-up"></i> ${s}
+                    </div>
+                `;
+            }).join('');
+
+            const syllableChips = (step.syllables || []).map(syl => `
+                <div class="drill-enlarge-fuller-chip" style="background:#fef3c7; color:#92400e; border-color:#fde68a;" data-play-syllable="${syl}" title="Hear syllable ${syl}">
+                    ${syl} <i class="fas fa-volume-up" style="font-size: 1rem;"></i>
+                </div>
+            `).join('');
+
+            const wordChips = (step.words || []).map(w => `
+                <div class="drill-enlarge-fuller-chip" style="background:#f5f3ff; color:#6d28d9; border-color:#ddd6fe; font-size:1.4rem;" data-play-word="${w}" title="Hear word ${w}">
+                    ${w} <i class="fas fa-volume-up" style="font-size: 1.1rem;"></i>
+                </div>
+            `).join('');
+
+            const sentenceBlocks = (step.sentences || []).map(sen => `
+                <div class="drill-enlarge-sentence-banner" style="margin-bottom:8px;" data-speak="${sen}" title="Click to hear sentence aloud">
+                    <span><i class="fas fa-volume-up" style="color:#10b981; margin-right:8px;"></i> "${sen}"</span>
+                    <i class="fas fa-play-circle" style="color:#10b981; font-size:1.4rem;"></i>
+                </div>
+            `).join('');
+
+            const modalHtml = `
+                <div class="drill-enlarge-card" style="max-width: 820px;" role="dialog" aria-modal="true" aria-label="Fuller Method Step Presentation">
+                    <div class="drill-enlarge-header" style="background: linear-gradient(135deg, #ecfdf5 0%, #e0f2fe 100%);">
+                        <div class="drill-enlarge-title-wrap">
+                            <span class="drill-enlarge-pill" style="background:#059669;"><i class="fas fa-layer-group"></i> Fuller Method</span>
+                            <span class="drill-enlarge-meta">Step ${step.order || (idx + 1)} of ${list.length}</span>
+                        </div>
+                        <button type="button" class="drill-enlarge-close-btn" title="Close (Esc)" aria-label="Close">
+                            <i class="fas fa-times"></i>
+                        </button>
+                    </div>
+
+                    <div class="drill-enlarge-body" style="align-items: stretch; text-align: left;">
+                        <div>
+                            <h3 style="font-size: 1.7rem; font-weight: 800; color: #0f172a; margin: 0 0 4px 0;">
+                                ${step.title}
+                            </h3>
+                            <p style="font-size: 1rem; color: #64748b; margin: 0;">${step.description}</p>
+                        </div>
+
+                        <!-- 1. Letters & Sounds -->
+                        <div class="drill-enlarge-fuller-section">
+                            <div class="drill-enlarge-fuller-sec-title">
+                                <i class="fas fa-font" style="color:#3b82f6;"></i> 1. Letter & Sound Recognition (Click to Hear)
+                            </div>
+                            <div class="drill-enlarge-fuller-chips-row">
+                                ${letterChips}
+                                ${soundChips}
+                            </div>
+                        </div>
+
+                        <!-- 2. Syllables -->
+                        <div class="drill-enlarge-fuller-section">
+                            <div class="drill-enlarge-fuller-sec-title">
+                                <i class="fas fa-puzzle-piece" style="color:#d97706;"></i> 2. Syllable Formation
+                            </div>
+                            <div class="drill-enlarge-fuller-chips-row">
+                                ${syllableChips || '<span style="color:#94a3b8; font-style:italic;">No syllables for this step.</span>'}
+                            </div>
+                        </div>
+
+                        <!-- 3. Words -->
+                        <div class="drill-enlarge-fuller-section">
+                            <div class="drill-enlarge-fuller-sec-title">
+                                <i class="fas fa-book-reader" style="color:#7c3aed;"></i> 3. Word Reading Practice
+                            </div>
+                            <div class="drill-enlarge-fuller-chips-row">
+                                ${wordChips || '<span style="color:#94a3b8; font-style:italic;">No words for this step.</span>'}
+                            </div>
+                        </div>
+
+                        <!-- 4. Sentences -->
+                        ${sentenceBlocks ? `
+                            <div class="drill-enlarge-fuller-section">
+                                <div class="drill-enlarge-fuller-sec-title">
+                                    <i class="fas fa-comment-alt" style="color:#10b981;"></i> 4. Guided Sentence Reading
+                                </div>
+                                <div>${sentenceBlocks}</div>
+                            </div>
+                        ` : ''}
+                    </div>
+
+                    <div class="drill-enlarge-footer">
+                        <button type="button" class="drill-enlarge-nav-btn" id="btnEnlargePrev" ${idx === 0 ? 'disabled' : ''}>
+                            <i class="fas fa-arrow-left"></i> Previous Step
+                        </button>
+                        <span style="font-size: 0.82rem; color: #64748b; font-weight: 600;">Step ${idx + 1} of ${list.length}</span>
+                        <button type="button" class="drill-enlarge-nav-btn" id="btnEnlargeNext" ${idx === list.length - 1 ? 'disabled' : ''}>
+                            Next Step <i class="fas fa-arrow-right"></i>
+                        </button>
+                    </div>
+                </div>
+            `;
+
+            this.createEnlargeModal(modalHtml, (e) => {
+                if (e.key === 'ArrowLeft' && idx > 0) {
+                    this.showEnlargedFullerCard(list[idx - 1].id);
+                } else if (e.key === 'ArrowRight' && idx < list.length - 1) {
+                    this.showEnlargedFullerCard(list[idx + 1].id);
+                }
+            });
+
+            const prevBtn = document.getElementById('btnEnlargePrev');
+            const nextBtn = document.getElementById('btnEnlargeNext');
+            if (prevBtn) prevBtn.addEventListener('click', () => this.showEnlargedFullerCard(list[idx - 1].id));
+            if (nextBtn) nextBtn.addEventListener('click', () => this.showEnlargedFullerCard(list[idx + 1].id));
+        },
+
+        showEnlargedBlendingCard(wordIdOrIdx) {
+            const list = this.materials.soundBlending;
+            let idx = 0;
+            if (typeof wordIdOrIdx === 'number') {
+                idx = wordIdOrIdx;
+            } else {
+                const found = list.findIndex(b => b.id === wordIdOrIdx || b.word === wordIdOrIdx);
+                if (found !== -1) idx = found;
+            }
+            const item = list[idx];
+
+            const imgDisplay = item.customImg
+                ? `<img src="${item.customImg}" alt="${item.word}">`
+                : `<span class="drill-enlarge-img-placeholder">${item.icon || '📖'}</span>`;
+
+            const tilesHtml = item.sounds.map((s, sIdx) => `
+                <div class="drill-enlarge-tile blend-modal-tile" data-tile-idx="${sIdx}" data-play-phoneme="${s}" title="Click to hear /${s}/">
+                    <span class="drill-enlarge-tile-letter">${s}</span>
+                    <span class="drill-enlarge-tile-sub">${item.ipa && item.ipa[sIdx] ? item.ipa[sIdx] : '/' + s + '/'}</span>
+                </div>
+                ${sIdx < item.sounds.length - 1 ? '<span style="font-size:2rem; font-weight:800; color:#10b981;">+</span>' : ''}
+            `).join('');
+
+            const modalHtml = `
+                <div class="drill-enlarge-card" role="dialog" aria-modal="true" aria-label="Sound Blending Theater">
+                    <div class="drill-enlarge-header" style="background: linear-gradient(135deg, #ecfdf5 0%, #f0fdf4 100%);">
+                        <div class="drill-enlarge-title-wrap">
+                            <span class="drill-enlarge-pill" style="background:#10b981;"><i class="fas fa-magic"></i> Sound Blending</span>
+                            <span class="drill-enlarge-meta">Word ${idx + 1} of ${list.length} • ${item.level}</span>
+                        </div>
+                        <div style="display: flex; align-items: center; gap: 8px;">
+                            <button type="button" class="btn-edit-blending-enlarged" data-id="${item.id}" title="Edit this blending word & sounds" style="background: #ffffff; border: 1.5px solid #10b981; border-radius: 8px; padding: 6px 12px; font-weight: 700; color: #047857; cursor: pointer; display: inline-flex; align-items: center; gap: 6px; font-size: 0.85rem; transition: all 0.2s;">
+                                <i class="fas fa-edit"></i> Edit Word & Sounds
+                            </button>
+                            <button type="button" class="drill-enlarge-close-btn" title="Close (Esc)" aria-label="Close">
+                                <i class="fas fa-times"></i>
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="drill-enlarge-body">
+                        <div style="font-size: 0.9rem; font-weight: 800; color: #047857; text-transform: uppercase; letter-spacing: 0.5px;">
+                            Tap each sound tile to hear phonemes:
+                        </div>
+
+                        <div class="drill-enlarge-sound-tiles">
+                            ${tilesHtml}
+                        </div>
+
+                        <div style="width: 100%; max-width: 440px; margin: 6px 0 12px 0;">
+                            <button type="button" class="drill-enlarge-action-btn drill-enlarge-btn-primary" id="btnModalBlendSoundsAction" style="width: 100%; font-size: 1.35rem; padding: 16px 28px;">
+                                <i class="fas fa-play-circle"></i> Blend Sounds Together
+                            </button>
+                        </div>
+
+                        <!-- Blended result banner -->
+                        <div class="drill-enlarge-sentence-banner" id="modalBlendResultCard" style="background:#ffffff; border: 3px solid #10b981; border-style: solid; box-shadow: 0 10px 25px rgba(16, 185, 129, 0.15);" data-play-word="${item.word}" title="Click to hear '${item.word}'">
+                            <div style="display:flex; align-items:center; gap: 16px;">
+                                <div style="width: 70px; height: 70px; border-radius: 12px; overflow:hidden; background:#f8fafc; display:flex; align-items:center; justify-content:center; flex-shrink:0;">
+                                    ${imgDisplay}
+                                </div>
+                                <div style="text-align: left;">
+                                    <div style="font-size: 0.8rem; font-weight: 800; color: #047857; text-transform:uppercase;">BLENDED WORD:</div>
+                                    <div style="font-size: 2.8rem; font-weight: 900; color: #0f172a; line-height: 1.1; font-family:'Comic Sans MS', cursive;">${item.word}</div>
+                                </div>
+                            </div>
+                            <i class="fas fa-volume-up" style="font-size: 2rem; color: #10b981;"></i>
+                        </div>
+                    </div>
+
+                    <div class="drill-enlarge-footer">
+                        <button type="button" class="drill-enlarge-nav-btn" id="btnEnlargePrev" ${idx === 0 ? 'disabled' : ''}>
+                            <i class="fas fa-arrow-left"></i> Previous Word
+                        </button>
+                        <span style="font-size: 0.82rem; color: #64748b; font-weight: 600;">Word ${idx + 1} of ${list.length}</span>
+                        <button type="button" class="drill-enlarge-nav-btn" id="btnEnlargeNext" ${idx === list.length - 1 ? 'disabled' : ''}>
+                            Next Word <i class="fas fa-arrow-right"></i>
+                        </button>
+                    </div>
+                </div>
+            `;
+
+            const modalObj = this.createEnlargeModal(modalHtml, (e) => {
+                if (e.key === 'ArrowLeft' && idx > 0) {
+                    this.showEnlargedBlendingCard(idx - 1);
+                } else if (e.key === 'ArrowRight' && idx < list.length - 1) {
+                    this.showEnlargedBlendingCard(idx + 1);
+                }
+            });
+
+            if (modalObj && modalObj.overlay) {
+                const editBtn = modalObj.overlay.querySelector('.btn-edit-blending-enlarged');
+                if (editBtn) {
+                    editBtn.addEventListener('click', (e) => {
+                        e.stopPropagation();
+                        this.showBlendingEditorModal(item);
+                    });
+                }
+            }
+
+            // Wire blend button
+            const blendBtn = document.getElementById('btnModalBlendSoundsAction');
+            if (blendBtn) {
+                blendBtn.addEventListener('click', () => {
+                    blendBtn.disabled = true;
+                    const tiles = document.querySelectorAll('.blend-modal-tile');
+                    DrillAudio.blendPhonemes(
+                        item.sounds,
+                        item.word,
+                        (highlightIdx) => {
+                            tiles.forEach((t, i) => {
+                                if (i === highlightIdx) t.classList.add('highlighted');
+                                else t.classList.remove('highlighted');
+                            });
+                        },
+                        () => {
+                            blendBtn.disabled = false;
+                            tiles.forEach(t => t.classList.remove('highlighted'));
+                            const resCard = document.getElementById('modalBlendResultCard');
+                            if (resCard) {
+                                resCard.style.transform = 'scale(1.05)';
+                                setTimeout(() => resCard.style.transform = 'scale(1)', 400);
+                            }
+                        }
+                    );
+                });
+            }
+
+            const prevBtn = document.getElementById('btnEnlargePrev');
+            const nextBtn = document.getElementById('btnEnlargeNext');
+            if (prevBtn) prevBtn.addEventListener('click', () => this.showEnlargedBlendingCard(idx - 1));
+            if (nextBtn) nextBtn.addEventListener('click', () => this.showEnlargedBlendingCard(idx + 1));
         }
     };
 
